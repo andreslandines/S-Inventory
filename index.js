@@ -3,6 +3,7 @@ import dotev from 'dotenv';
 import{conectaDB,supabase} from "./config/supabase.js";
 import AuthRoutes from "./routes/Auth.js";
 import UsuariosRoutes from "./routes/usuarios.js";
+import productosRoutes from "./routes/productos.js";
 import cors from 'cors';
 
 //CARGAR VARIABLES
@@ -19,6 +20,7 @@ app.use(cors());
 //ruta de autenticacion
 app.use('/Auth', AuthRoutes);
 app.use('/usuarios', UsuariosRoutes);
+app.use('/pro', productosRoutes);
 
 
 //CONFIGURAMOS EL PUERTO 
