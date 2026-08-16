@@ -1,5 +1,6 @@
 import express from 'express';
 import { listarproductos, obtenerproductos, obtenerPorCat, crear, editar, eliminar } from '../controllers/productos.js';
+import {verificarToken, verificarAdmin} from '../middlewares/authmiddlewares.js';
 const router = express.Router();
 
 
@@ -16,12 +17,11 @@ router.get('/productos/categoria/:categoria', obtenerPorCat);
 //Rutas protegidas por token y rol de administrador
 
 // POST - Crear helado
-router.post('/productoscrear', crear);
+router.post('/productoscrear',verificarToken, verificarAdmin, crear);
 
 // PUT - Actualizar helado
-router.put('/productoseditar/:id_productos',  editar);
+router.put('/productoseditar/:id_productos', verificarToken, verificarAdmin, editar);
 
 // DELETE - Eliminar helado
-router.delete('/productoseliminar/:id_productos',  eliminar);
-
+router.delete('/productoseliminar/:id_productos', verificarToken, verificarAdmin,  eliminar);
 export default router;
