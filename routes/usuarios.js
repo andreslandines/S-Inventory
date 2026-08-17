@@ -9,12 +9,12 @@ const router = express.Router();
 router.get('/', getUsuarios);
 
 //ruta para obtener un usuario por id
-router.get('/:id', getUsuarioporId);
+router.get('/:id_usuario', getUsuarioporId);
 
 //ruta para actualizar un usuario por id
-router.put('/actualizar:id', putUsuarioporId);
+router.put('/actualizar:id_usuario', putUsuarioporId);
 
 //ruta para eliminar usuario por id
-router.delete('/eliminar:id', deleteUsuario);
+router.delete('/eliminar:id_usuario', deleteUsuario);
 
 export default router;
