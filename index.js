@@ -4,6 +4,7 @@ import{conectaDB,supabase} from "./config/supabase.js";
 import AuthRoutes from "./routes/Auth.js";
 import UsuariosRoutes from "./routes/usuarios.js";
 import productosRoutes from "./routes/productos.js";
+import ventasRoutes from "./routes/ventas.js";
 import cors from 'cors';
 
 //CARGAR VARIABLES
@@ -21,6 +22,7 @@ app.use(cors());
 app.use('/Auth', AuthRoutes);
 app.use('/usuarios', UsuariosRoutes);
 app.use('/pro', productosRoutes);
+app.use('/ventas', ventasRoutes);
 
 
 //CONFIGURAMOS EL PUERTO 
