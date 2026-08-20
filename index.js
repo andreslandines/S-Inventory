@@ -18,6 +18,15 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+//CREAMOS LA RUTA
+app.get('/',(req,res)=>{
+    res.json({
+        Mensaje:"Bienvenido al BACKEND de MIMOS",
+        Estado: "En linea",
+        Version:"1.0.0"
+    })
+})
+
 
 //ruta de autenticacion
 app.use('/Auth', AuthRoutes);

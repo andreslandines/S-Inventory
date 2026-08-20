@@ -36,8 +36,11 @@ export const obtenerPorCat = async (req, res) => {
 
 export const crear = async (req, res) => {
   try {
-    const { nombre, descripcion, precio, categoria, stock, imagen  } =
-req.body;
+    const { nombre, descripcion, precio, categoria, stock  } = req.body;
+
+    //Cloudinary almacena la URL segura en req.file.path
+    const imagen = req.file ? req.file.path : null;
+
     if (!nombre || !precio || !imagen) {
       return res.status(400).json({ error: 'nombre, precio e imagen requeridos' });
     }
