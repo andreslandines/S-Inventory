@@ -10,7 +10,7 @@ export const listarVencimientos = async (req, res) => {
         const { data, error } = await obtenerVencimientos();
 
         if (error) {
-            console.error("Error al obtener los vencimientos:", error);
+            console.error("Error al obtener los vencimientos: ", error);
 
             return res.status(500).json({
                 error: "Error al obtener los vencimientos"
@@ -21,13 +21,14 @@ export const listarVencimientos = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Error en listarVencimientos:", error);
+        console.error("Error en listarVencimientos: ", error);
 
         return res.status(500).json({
             error: error.message
         });
     }
 };
+
 
 
 // Obtener un vencimiento por ID
@@ -50,7 +51,7 @@ export const obtenerVencimiento = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Error al obtener el vencimiento:", error);
+        console.error("Error al obtener el vencimiento: ", error);
 
         return res.status(500).json({
             error: error.message
@@ -87,7 +88,7 @@ export const registrarVencimiento = async (req, res) => {
 
         if (error) {
 
-            console.error("Error al crear vencimiento:", error);
+            console.error("Error al crear vencimiento: ", error);
 
             return res.status(500).json({
                 error: "Error al crear el vencimiento",
@@ -102,7 +103,7 @@ export const registrarVencimiento = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Error al registrar vencimiento:", error);
+        console.error("Error al registrar vencimiento: ", error);
 
         return res.status(500).json({
             error: error.message
@@ -143,7 +144,7 @@ export const editarVencimiento = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Error al actualizar vencimiento:", error);
+        console.error("Error al actualizar vencimiento: ", error);
 
         return res.status(500).json({
             error: error.message
@@ -176,7 +177,7 @@ export const borrarVencimiento = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Error al eliminar vencimiento:", error);
+        console.error("Error al eliminar vencimiento: ", error);
 
         return res.status(500).json({
             error: error.message
@@ -197,7 +198,7 @@ export const listarProximosAVencer = async (req, res) => {
         if (error) {
 
             console.error(
-                "Error al obtener productos próximos a vencer:",
+                "Error al obtener productos próximos a vencer: ",
                 error
             );
 
@@ -211,7 +212,7 @@ export const listarProximosAVencer = async (req, res) => {
     } catch (error) {
 
         console.error(
-            "Error en listarProximosAVencer:",
+            "Error en listarProximosAVencer: ",
             error
         );
 
