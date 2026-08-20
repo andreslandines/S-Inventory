@@ -44,13 +44,17 @@ export const crear = async (req, res) => {
     if (!nombre || !precio || !imagen) {
       return res.status(400).json({ error: 'nombre, precio e imagen requeridos' });
     }
+
     const { data, error } = await crearproductos({
       nombre, descripcion, precio, categoria, stock, imagen
     });
+
     if (error) return res.status(500).json({ error: 'Error al crear' });
     return res.status(201).json({ message: 'Creado', producto: data[0] });
   } catch (error) {
+
     return res.status(500).json({ error: error.message });
+    
   }
 };
 
@@ -72,6 +76,8 @@ export const eliminar = async (req, res) => {
     if (error) return res.status(500).json({ error: 'Error al eliminar' });
     return res.status(200).json({ message: 'Eliminado' });
   } catch (error) {
+
     return res.status(500).json({ error: error.message });
+
   }
 };
