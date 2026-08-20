@@ -6,6 +6,7 @@ import UsuariosRoutes from "./routes/usuarios.js";
 import productosRoutes from "./routes/productos.js";
 import ventasRoutes from "./routes/ventas.js";
 import vencimientosRoutes from "./routes/vencimientos.js";
+import notificacionesRoutes from "./routes/notificaciones.js";
 import cors from 'cors';
 
 //CARGAR VARIABLES
@@ -34,6 +35,7 @@ app.use('/usuarios', UsuariosRoutes);
 app.use('/pro', productosRoutes);
 app.use('/ventas', ventasRoutes);
 app.use('/vencimientos', vencimientosRoutes);
+app.use('/notificaciones', notificacionesRoutes);
 
 
 //CONFIGURAMOS EL PUERTO 
