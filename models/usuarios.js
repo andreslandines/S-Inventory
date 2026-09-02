@@ -13,8 +13,6 @@ export const crearUsuarios = async (nombre, email, rol, contrasena) => {
             contrasena
         })
         .select('*');
-
-
     return resultado;
 };
 
