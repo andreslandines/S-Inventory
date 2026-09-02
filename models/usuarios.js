@@ -2,10 +2,7 @@
 import{supabase} from "../config/supabase.js";
 
 export const crearUsuarios = async (nombre, email, rol, contrasena) => {
-    console.log("🔵 Entró a crearUsuarios");
-    console.log("nombre:", nombre);
-    console.log("email:", email);
-    console.log("rol:", rol);
+
 
     const resultado = await supabase
         .from('usuarios')
@@ -17,7 +14,6 @@ export const crearUsuarios = async (nombre, email, rol, contrasena) => {
         })
         .select('*');
 
-    console.log("🟢 Resultado Supabase:", resultado);
 
     return resultado;
 };
