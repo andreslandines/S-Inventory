@@ -38,6 +38,10 @@ app.use('/vencimientos', vencimientosRoutes);
 app.use('/notificaciones', notificacionesRoutes);
 
 
+console.log('BREVO_API_KEY existe:', !!process.env.BREVO_API_KEY);
+console.log('EMAIL_USER existe:', !!process.env.EMAIL_USER);
+console.log('SUPABASE_URL existe:', !!process.env.SUPABASE_URL);
+
 //CONFIGURAMOS EL PUERTO 
 
 const PORT = 3000;
