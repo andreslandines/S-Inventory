@@ -7,6 +7,7 @@ import productosRoutes from "./routes/productos.js";
 import ventasRoutes from "./routes/ventas.js";
 import vencimientosRoutes from "./routes/vencimientos.js";
 import notificacionesRoutes from "./routes/notificaciones.js";
+import chatbotRoutes from "./routes/chatbot.js";
 import cors from 'cors';
 
 //CARGAR VARIABLES
@@ -36,7 +37,7 @@ app.use('/pro', productosRoutes);
 app.use('/ventas', ventasRoutes);
 app.use('/vencimientos', vencimientosRoutes);
 app.use('/notificaciones', notificacionesRoutes);
-
+app.use('/api/boxia', chatbotRoutes);
 
 console.log('BREVO_API_KEY existe:', !!process.env.BREVO_API_KEY);
 console.log('EMAIL_USER existe:', !!process.env.EMAIL_USER);

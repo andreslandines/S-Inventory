@@ -21,7 +21,6 @@ export const crearUsuarios = async (
             codigoVerificacionExpiracion
         })
         .select('id_usuario,nombre,email,rol')
-        .single();
 
     return { data, error };
 };
@@ -45,7 +44,7 @@ export const obtenerPorEmail = async (email) => {
         .from('usuarios')
         .select('*')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
     return { data, error };
 };

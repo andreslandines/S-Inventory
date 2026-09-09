@@ -1,3 +1,4 @@
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -13,9 +14,9 @@ import {
 } from '../utils/sendEmail.js';
 
 
-// =====================================================
+// ======================================================
 // REGISTRO
-// =====================================================
+// ======================================================
 
 export const registro = async (req, res) => {
 
@@ -23,76 +24,94 @@ export const registro = async (req, res) => {
 
         const {
             nombre,
-            email,
-            contrasena
+            contrasena,
+            email
+            
         } = req.body;
 
 
-        // ---------------------------------------------
-        // VALIDAR DATOS
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Validar datos
+        // ----------------------------------------------
 
-        if (!nombre || !email || !contrasena) {
+        if (!nombre || !contrasena || !email) {
 
             return res.status(400).json({
                 error: 'El nombre, email y contraseña son requeridos'
             });
+
         }
 
 
-        // ---------------------------------------------
-        // VERIFICAR SI EL EMAIL YA EXISTE
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Verificar si el email ya existe
+        // ----------------------------------------------
 
         const {
-            data: usuarioExiste
+            data: usuarioExiste,
+            error: errorBusqueda
         } = await obtenerPorEmail(email);
+
+
+        if (errorBusqueda) {
+
+            console.error(
+                'Error buscando usuario:',
+                errorBusqueda
+            );
+
+            return res.status(500).json({
+                error: 'Error al verificar el email'
+            }); 
+
+        }
+
 
         if (usuarioExiste) {
 
             return res.status(400).json({
                 error: 'El email ya existe'
             });
+
         }
 
 
-        // ---------------------------------------------
-        // ENCRIPTAR CONTRASEÑA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Encriptar contraseña
+        // ----------------------------------------------
 
-        const hashedContrasena = await bcrypt.hash(
-            contrasena,
-            10
-        );
+        const hashedContrasena =
+            await bcrypt.hash(contrasena, 10);
 
 
-        // ---------------------------------------------
-        // ROL POR DEFECTO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Rol por defecto
+        // ----------------------------------------------
 
         const rolPorDefecto = 'usuario';
 
 
-        // ---------------------------------------------
-        // GENERAR CODIGO DE VERIFICACION
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Generar código de verificación
+        // ----------------------------------------------
 
-        const codigoVerificacion =
+        const CodigoVerificacion =
             Math.floor(
                 100000 + Math.random() * 900000
             ).toString();
 
 
         // Código válido durante 15 minutos
+
         const codigoVerificacionExpiracion =
             new Date(
                 Date.now() + 15 * 60 * 1000
             );
 
 
-        // ---------------------------------------------
-        // GUARDAR USUARIO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Crear usuario en Supabase
+        // ----------------------------------------------
 
         const {
             data,
@@ -102,7 +121,7 @@ export const registro = async (req, res) => {
             email,
             rolPorDefecto,
             hashedContrasena,
-            codigoVerificacion,
+            CodigoVerificacion,
             codigoVerificacionExpiracion
         );
 
@@ -110,20 +129,20 @@ export const registro = async (req, res) => {
         if (error) {
 
             console.error(
-                'Error creando usuario:',
+                'Error al crear usuario:',
                 error
             );
 
             return res.status(500).json({
-                error: 'Error al crear el usuario',
-                detalle: error.message
+                error: 'Error al crear el usuario'
             });
+
         }
 
 
-        // ---------------------------------------------
-        // USUARIO CREADO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Obtener usuario creado
+        // ----------------------------------------------
 
         const usuarioCreado =
             Array.isArray(data)
@@ -131,21 +150,30 @@ export const registro = async (req, res) => {
                 : data;
 
 
-        // ---------------------------------------------
-        // ENVIAR CORREO
-        // ---------------------------------------------
+        if (!usuarioCreado) {
+
+            return res.status(500).json({
+                error: 'No se pudo obtener el usuario creado'
+            });
+
+        }
+
+
+        // ----------------------------------------------
+        // Enviar código de verificación
+        // ----------------------------------------------
 
         const resultadoEnvio =
             await enviarCodigoVerificacion(
                 email,
                 nombre,
-                codigoVerificacion
+                CodigoVerificacion
             );
 
 
-        // ---------------------------------------------
-        // RESPUESTA DEL USUARIO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Datos que se devuelven al frontend
+        // ----------------------------------------------
 
         const usuarioRespuesta = {
 
@@ -160,39 +188,43 @@ export const registro = async (req, res) => {
 
             rol:
                 usuarioCreado.rol
+
         };
 
 
-        // ---------------------------------------------
-        // SI BREVO FALLA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Si Brevo falla
+        // ----------------------------------------------
 
         if (!resultadoEnvio.exito) {
 
-            return res.status(200).json({
+            return res.status(201).json({
 
                 message:
-                    'Usuario registrado con éxito, pero no se pudo enviar el correo de verificación',
+                    'Usuario registrado correctamente, pero no se pudo enviar el código de verificación',
 
                 emailEnviado: false,
 
                 usuario: usuarioRespuesta
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // TODO CORRECTO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Registro exitoso
+        // ----------------------------------------------
 
         return res.status(201).json({
 
             message:
-                'Usuario registrado con éxito, correo de verificación enviado',
+                'Usuario registrado correctamente. Se envió el código de verificación a su correo',
 
             emailEnviado: true,
 
             usuario: usuarioRespuesta
+
         });
 
 
@@ -206,14 +238,15 @@ export const registro = async (req, res) => {
         return res.status(500).json({
             error: error.message
         });
+
     }
+
 };
 
 
-
-// =====================================================
+// ======================================================
 // LOGIN
-// =====================================================
+// ======================================================
 
 export const login = async (req, res) => {
 
@@ -225,22 +258,22 @@ export const login = async (req, res) => {
         } = req.body;
 
 
-        // ---------------------------------------------
-        // VALIDAR DATOS
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Validar datos
+        // ----------------------------------------------
 
         if (!email || !contrasena) {
 
             return res.status(400).json({
-                error:
-                    'El email y la contraseña son requeridos'
+                error: 'El email y la contraseña son requeridos'
             });
+
         }
 
 
-        // ---------------------------------------------
-        // BUSCAR USUARIO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Buscar usuario
+        // ----------------------------------------------
 
         const {
             data: usuario,
@@ -248,17 +281,32 @@ export const login = async (req, res) => {
         } = await obtenerPorEmail(email);
 
 
-        if (error || !usuario) {
+        if (error) {
+
+            console.error(
+                'Error buscando usuario:',
+                error
+            );
+
+            return res.status(500).json({
+                error: 'Error al buscar el usuario'
+            });
+
+        }
+
+
+        if (!usuario) {
 
             return res.status(401).json({
                 error: 'Credenciales incorrectas'
             });
+
         }
 
 
-        // ---------------------------------------------
-        // COMPARAR CONTRASEÑA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Comparar contraseña
+        // ----------------------------------------------
 
         const contrasenaValida =
             await bcrypt.compare(
@@ -272,26 +320,29 @@ export const login = async (req, res) => {
             return res.status(401).json({
                 error: 'Credenciales incorrectas'
             });
+
         }
 
 
-        // ---------------------------------------------
-        // VERIFICAR CUENTA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Verificar cuenta
+        // ----------------------------------------------
 
         if (!usuario.isVerified) {
 
             return res.status(403).json({
 
                 error:
-                    'Tu cuenta no ha sido verificada. Por favor ingresa el código enviado a tu correo.'
+                    'Tu cuenta no ha sido verificada. Ingresa el código enviado a tu correo antes de iniciar sesión.'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // CREAR TOKEN
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Crear token JWT
+        // ----------------------------------------------
 
         const token = jwt.sign(
 
@@ -308,12 +359,13 @@ export const login = async (req, res) => {
             {
                 expiresIn: '1d'
             }
+
         );
 
 
-        // ---------------------------------------------
-        // RESPUESTA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Respuesta
+        // ----------------------------------------------
 
         return res.status(200).json({
 
@@ -335,7 +387,9 @@ export const login = async (req, res) => {
 
                 rol:
                     usuario.rol
+
             }
+
         });
 
 
@@ -349,14 +403,15 @@ export const login = async (req, res) => {
         return res.status(500).json({
             error: error.message
         });
+
     }
+
 };
 
 
-
-// =====================================================
+// ======================================================
 // VERIFICAR CUENTA
-// =====================================================
+// ======================================================
 
 export const verificarCuenta = async (req, res) => {
 
@@ -368,9 +423,9 @@ export const verificarCuenta = async (req, res) => {
         } = req.body;
 
 
-        // ---------------------------------------------
-        // VALIDAR DATOS
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Validar datos
+        // ----------------------------------------------
 
         if (!email || !codigo) {
 
@@ -378,13 +433,15 @@ export const verificarCuenta = async (req, res) => {
 
                 error:
                     'El email y el código de verificación son requeridos'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // BUSCAR USUARIO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Buscar usuario
+        // ----------------------------------------------
 
         const {
             data: usuario,
@@ -408,17 +465,24 @@ export const verificarCuenta = async (req, res) => {
 
         if (errorUsuario || !usuario) {
 
+            console.error(
+                'Error buscando usuario:',
+                errorUsuario
+            );
+
             return res.status(404).json({
 
                 error:
                     'Usuario no encontrado'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // VERIFICAR SI YA ESTÁ VERIFICADO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Verificar si ya está verificada
+        // ----------------------------------------------
 
         if (usuario.isVerified) {
 
@@ -426,17 +490,18 @@ export const verificarCuenta = async (req, res) => {
 
                 error:
                     'La cuenta ya se encuentra verificada'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // COMPARAR CÓDIGO
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Comparar código
+        // ----------------------------------------------
 
         if (
-            String(usuario.CodigoVerificacion).trim()
-            !==
+            String(usuario.CodigoVerificacion).trim() !==
             String(codigo).trim()
         ) {
 
@@ -444,13 +509,15 @@ export const verificarCuenta = async (req, res) => {
 
                 error:
                     'El código de verificación es incorrecto'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // VERIFICAR EXPIRACIÓN
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Verificar expiración
+        // ----------------------------------------------
 
         const ahora = new Date();
 
@@ -460,22 +527,21 @@ export const verificarCuenta = async (req, res) => {
             );
 
 
-        if (
-            !usuario.codigoVerificacionExpiracion ||
-            ahora > codigoExpiracion
-        ) {
+        if (ahora > codigoExpiracion) {
 
             return res.status(400).json({
 
                 error:
-                    'El código ha expirado. Por favor solicita uno nuevo'
+                    'El código ha expirado. Solicita uno nuevo'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // ACTIVAR CUENTA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Activar cuenta
+        // ----------------------------------------------
 
         const {
             error: errorUpdate
@@ -510,18 +576,21 @@ export const verificarCuenta = async (req, res) => {
 
                 error:
                     'Error al actualizar el estado de verificación'
+
             });
+
         }
 
 
-        // ---------------------------------------------
-        // RESPUESTA
-        // ---------------------------------------------
+        // ----------------------------------------------
+        // Verificación exitosa
+        // ----------------------------------------------
 
         return res.status(200).json({
 
             message:
                 'Cuenta verificada exitosamente. Ya puedes iniciar sesión en S-Inventory.'
+
         });
 
 
@@ -535,5 +604,8 @@ export const verificarCuenta = async (req, res) => {
         return res.status(500).json({
             error: error.message
         });
+
     }
+
 };
+
