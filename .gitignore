@@ -1,2 +1,25 @@
-.env
+# Dependencias
 node_modules/
+**/node_modules/
+
+# Variables de entorno
+.env
+**/.env
+
+# Flutter
+.dart_tool/
+**/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Builds
+build/
+**/build/
+
+# IDE
+.idea/
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
