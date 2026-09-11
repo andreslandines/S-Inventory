@@ -1,19 +1,9 @@
 import { crearCodigoDeRecuperacion, marcarComoUsado, obtenerCodigoValido } from "../models/recuperar.js";
 import { actualizarUsuario, obtenerPorEmail } from "../models/usuarios.js";
 import bcrypt from 'bcryptjs';
-import nodemailer from 'nodemailer';
+import { enviarCodigoRecuperacion } from "../utils/sendEmail.js";
 
 
-//configuramos el tranporte de nodemailer
-
-const transporter=nodemailer.createTransport({
-    service:'gmail',
-    auth:{
-        user:process.env.EMAIL_USER,
-        pass:process.env.EMAIL_PASS
-    }
-
-});
 
 
 //CONFIGURAR LA LOGICA PARA ENVIAR EL CORREO DE RECUPERACION
