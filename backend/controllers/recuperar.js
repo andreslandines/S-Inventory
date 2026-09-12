@@ -1,7 +1,7 @@
 import { crearCodigoDeRecuperacion, marcarComoUsado, obtenerCodigoValido } from "../models/recuperar.js";
 import { actualizarUsuario, obtenerPorEmail } from "../models/usuarios.js";
 import bcrypt from 'bcryptjs';
-import { enviarCodigoRecuperacion } from "../utils/sendEmail.js";
+import { enviarCodigoRecuperacion , enviarConfirmacionCambioContrasena} from "../utils/sendEmail.js";
 
 
 
@@ -36,24 +36,17 @@ export const forgotPassword= async (req,res) =>{
         }
          //CREAMOS EL EMAIL DEL CODIGO
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: `Tu codigo de recuperacion es: ${codigo}`,
-            html: `
-            <h2>Recuperacion de contraseña</h2>
-            <p> Hola ${usuario.nombre || 'Usuario'}, </p>
-            <p> Tu codigo de recuperacion es:</p>
-            <h1 style="color: #0063a9; font-size: 36px;"> ${codigo} </h1>
-            <p> Este codigo es valido por 15 minutos. Si no solicitaste este codigo por favor ignora este correo.
-            <p>Gracias,</p>
-            <p>El equipo de soporte</p>
-            <p>No compartas este codigo con nadie </p>
-            `
+        await enviarCodigoRecuperacion(
+            email,
+            usuario.nombre,
+            codigo
+        );
 
+        return res.status(200).json({
+            message: 'Código de recuperación enviado al correo'
         });
-        return res.status(200).json({error: 'Codigo de recuperacion enviado al correo'});
 
+        
     }catch (error) {
         console.error('Error en forgotContrasena:', error);
         return res.status(500).json({error: 'Error al enviar el codigo de recuperacion'});
@@ -126,60 +119,11 @@ export const verifyCode = async (req, res) => {
         }
 
         // Enviamos correo de confirmación
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Contraseña cambiada exitosamente',
-            html: `
-                <div style="
-                    font-family: sans-serif;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    border: 1px solid #ddd;
-                    border-radius: 5px;
-                ">
-                    <h2 style="color: #333;">
-                        Notificación de cambio de contraseña
-                    </h2>
+        await enviarConfirmacionCambioContrasena(
+            email,
+            usuario.nombre
+        );
 
-                    <p>
-                        Hola ${usuario.nombre || 'Usuario'},
-                    </p>
-
-                    <p>
-                        Te informamos que tu contraseña ha sido
-                        cambiada exitosamente.
-                    </p>
-
-                    <div style="
-                        background-color: #f9f9f9;
-                        padding: 15px;
-                        border-left: 4px solid #39a900;
-                        margin-top: 20px;
-                    ">
-                        <p style="
-                            margin: 0;
-                            font-size: 14px;
-                            color: #555;
-                        ">
-                            Si no realizaste este cambio,
-                            te recomendamos que contactes
-                            a nuestro equipo de soporte inmediatamente.
-                        </p>
-                    </div>
-
-                    <p style="
-                        color: #555;
-                        font-size: 14px;
-                        margin-top: 30px;
-                    ">
-                        Gracias,<br>
-                        Equipo de soporte
-                    </p>
-                </div>
-            `
-        });
 
         // Respuesta al frontend/Postman
         return res.status(200).json({
@@ -195,4 +139,6 @@ export const verifyCode = async (req, res) => {
             detalle: error.message
         });
     }
+
+    
 };

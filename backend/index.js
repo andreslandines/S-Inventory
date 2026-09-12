@@ -1,5 +1,6 @@
 import express from 'express';
 import dotev from 'dotenv';
+import "./utils/cron.js";
 import{conectaDB,supabase} from "./config/supabase.js";
 import AuthRoutes from "./routes/Auth.js";
 import UsuariosRoutes from "./routes/usuarios.js";
@@ -8,6 +9,7 @@ import ventasRoutes from "./routes/ventas.js";
 import vencimientosRoutes from "./routes/vencimientos.js";
 import notificacionesRoutes from "./routes/notificaciones.js";
 import chatbotRoutes from "./routes/chatbot.js";
+import reportesRoutes from "./routes/reportes.js";
 import cors from 'cors';
 
 //CARGAR VARIABLES
@@ -31,13 +33,14 @@ app.get('/',(req,res)=>{
 
 
 //ruta de autenticacion
-app.use('/Auth', AuthRoutes);
+app.use('/auth', AuthRoutes);
 app.use('/usuarios', UsuariosRoutes);
 app.use('/pro', productosRoutes);
 app.use('/ventas', ventasRoutes);
 app.use('/vencimientos', vencimientosRoutes);
 app.use('/notificaciones', notificacionesRoutes);
 app.use('/api/boxia', chatbotRoutes);
+app.use("/reportes", reportesRoutes);
 
 console.log('BREVO_API_KEY existe:', !!process.env.BREVO_API_KEY);
 console.log('EMAIL_USER existe:', !!process.env.EMAIL_USER);
