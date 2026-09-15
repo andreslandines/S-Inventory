@@ -80,7 +80,7 @@ export const chatearConBoxIA = async (req, res) => {
         ];
 
         const { error: insertError } = await supabase
-            .from("mensajes_chat")
+            .from("mensaje_chat")
             .insert(registroAInsertar);
 
         if (insertError) {
@@ -101,12 +101,12 @@ export const chatearConBoxIA = async (req, res) => {
     }
 };
 
-export const obtenerHistorialMimos = async (req, res) => {
+export const obtenerHistorial = async (req, res) => {
     try {
         const { sesionId } = req.params;
 
         const { data: historial, error } = await supabase
-            .from("mensajes_chat")
+            .from("mensaje_chat")
             .select("emisor, mensaje, created_at")
             .eq("sesion_id", sesionId)
             .order("created_at", { ascending: true });
