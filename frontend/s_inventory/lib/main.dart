@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/pantallas/inicio.dart';
+import 'package:s_inventory/pantallas/recoverypassword.dart';
 
 void main() {
   runApp(const MainApp());
@@ -13,7 +14,7 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: inicio()
+        body: Recoverypassword()
       ),
     );
   }
