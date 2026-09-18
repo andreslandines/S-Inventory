@@ -23,7 +23,7 @@ class _inicioState extends State<inicio> {
           children: [
             Text("S-Inventory", style:Estilotextos.Titulos),
             Image(
-              image: AssetImage("assets/images/.jpg"),
+              image: AssetImage("assets/images/logo.png"),
               width: 150,
               height: 200,
               fit: BoxFit.cover,
