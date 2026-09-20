@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:s_inventory/pantallas/inicio.dart';
-import 'package:s_inventory/pantallas/recoverypassword.dart';
-=======
 import 'package:s_inventory/pantallas/iniciologo.dart';
 import 'package:s_inventory/pantallas/login.dart';
->>>>>>> b9b48df (carpetas)
 
 void main() {
   runApp(const MainApp());
@@ -19,9 +14,6 @@ class MainApp extends StatelessWidget {
      return const MaterialApp(
       debugShowCheckedModeBanner:false ,
       home: Scaffold(
-<<<<<<< HEAD
-        body: Recoverypassword()
-=======
         body:SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -33,7 +25,6 @@ class MainApp extends StatelessWidget {
             ],
           ),
         ),
->>>>>>> b9b48df (carpetas)
       ),
     );
   }
