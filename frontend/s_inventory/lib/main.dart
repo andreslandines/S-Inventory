@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:s_inventory/pantallas/iniciologo.dart';
-import 'package:s_inventory/pantallas/login.dart';
+import 'package:s_inventory/components/login.dart';
+import 'package:s_inventory/pages/iniciologo.dart';
+import 'package:s_inventory/pages/home.dart';
 
 void main() {
   runApp(const MainApp());
@@ -13,19 +14,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
      return const MaterialApp(
       debugShowCheckedModeBanner:false ,
-      home: Scaffold(
-        body:SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              iniciologo(),
-              login(),
-              
-
-            ],
-          ),
-        ),
-      ),
+      home: LoginScreen(),
     );
   }
 }
