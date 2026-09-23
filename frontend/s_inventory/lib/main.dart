@@ -15,12 +15,7 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [iniciologo(), login()],
-          ),
-        ),
+        body: Recoverypassword()
       ),
     );
   }
