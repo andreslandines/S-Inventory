@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:s_inventory/pantallas/inicio.dart';
 import 'package:s_inventory/pantallas/recoverypassword.dart';
 
 void main() {
