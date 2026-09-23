@@ -3,14 +3,14 @@ import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 
 
-class inicio extends StatefulWidget {
-  const inicio({super.key});
+class iniciologo extends StatefulWidget {
+  const iniciologo({super.key});
 
   @override
-  State<inicio> createState() => _inicioState();
+  State<iniciologo> createState() => _iniciologoState();
 }
 
-class _inicioState extends State<inicio> {
+class _iniciologoState extends State<iniciologo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,13 +21,17 @@ class _inicioState extends State<inicio> {
          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("S-Inventory", style:Estilotextos.Titulos),
-            Image(
-              image: AssetImage("assets/images/logo.png"),
-              width: 150,
-              height: 200,
-              fit: BoxFit.cover,
+            ClipOval(
+              child: 
+              Image(
+                image: AssetImage("assets/images/logo.png"),
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
             ),
+            Text("S-Inventory", style:Estilotextos.Titulos),
+
           ],
          ),
       ),

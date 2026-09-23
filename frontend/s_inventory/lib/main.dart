@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/pantallas/recoverypassword.dart';
+import 'package:s_inventory/pantallas/iniciologo.dart';
+import 'package:s_inventory/pantallas/login.dart';
 
 void main() {
   runApp(const MainApp());
@@ -13,7 +15,12 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: Recoverypassword()
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [iniciologo(), login()],
+          ),
+        ),
       ),
     );
   }
