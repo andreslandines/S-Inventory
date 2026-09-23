@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-
   //DEFINIMOS EL COLOR PRIMARIO DE LA APP
 
   static const Color primary = Color(0xFF1E4D77);
@@ -18,7 +17,11 @@ class AppColors {
 
   static const Color fondo = Color(0xFF0E2136); //Fondo general de las pantallas
 
-  static const Color fondoComponentes = Color(0xFF193A5B); //Tarjetas, formularios y paneles
+  static const Color fondoComponentes = Color(
+    0xFF193A5B,
+  ); //Tarjetas, formularios y paneles
 
-  static const Color fondoComponenteSeleccionado = Color(0xFF2E7FDA); //Elemento seleccionado/activo
+  static const Color fondoComponenteSeleccionado = Color(
+    0xFF2E7FDA,
+  ); //Elemento seleccionado/activo
 }
