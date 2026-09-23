@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'colores.dart';
 
 class Estilotextos {
 
@@ -53,4 +54,17 @@ class Estilotextos {
     fontWeight: FontWeight.w600,
      fontFamily: 'Roboto'
   );
+
+static const TextStyle label = TextStyle(
+   color: Colors.white,
+    fontSize: 14,
+    fontWeight: FontWeight.w200,
+     fontFamily: 'Roboto'
+);
+
+static const TextStyle textoOlvidasteContrasena = TextStyle(
+  color: AppColors.fondoComponenteSeleccionado,
+  fontSize: 14,
+);
+
 }
