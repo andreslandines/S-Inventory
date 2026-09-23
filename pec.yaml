@@ -1,0 +1,30 @@
+[1mdiff --git a/frontend/s_inventory/lib/core/estilostexto.dart b/frontend/s_inventory/lib/core/estilostexto.dart[m
+[1mindex 2f62866..d4e419d 100644[m
+[1m--- a/frontend/s_inventory/lib/core/estilostexto.dart[m
+[1m+++ b/frontend/s_inventory/lib/core/estilostexto.dart[m
+[36m@@ -1,4 +1,5 @@[m
+ import 'package:flutter/material.dart';[m
+[32m+[m[32mimport 'colores.dart';[m
+ [m
+ class Estilotextos {[m
+ [m
+[36m@@ -53,4 +54,17 @@[m [mclass Estilotextos {[m
+     fontWeight: FontWeight.w600,[m
+      fontFamily: 'Roboto'[m
+   );[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m
+[32m+[m[32mstatic const TextStyle label = TextStyle([m
+[32m+[m[32m   color: Colors.white,[m
+[32m+[m[32m    fontSize: 14,[m
+[32m+[m[32m    fontWeight: FontWeight.w200,[m
+[32m+[m[32m     fontFamily: 'Roboto'[m
+[32m+[m[32m);[m
+[32m+[m
+[32m+[m[32mstatic const TextStyle textoOlvidasteContrasena = TextStyle([m
+[32m+[m[32m  color: AppColors.fondoComponenteSeleccionado,[m
+[32m+[m[32m  fontSize: 14,[m
+[32m+[m[32m);[m
+[32m+[m
+[32m+[m[32m}[m
