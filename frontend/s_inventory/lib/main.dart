@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:s_inventory/pantallas/recoverypassword.dart';
-import 'package:s_inventory/pantallas/iniciologo.dart';
-import 'package:s_inventory/pantallas/login.dart';
+import 'package:s_inventory/components/login.dart';
 
 void main() {
   runApp(const MainApp());
@@ -14,9 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Recoverypassword()
-      ),
+      home: LoginScreen(),
     );
   }
 }
