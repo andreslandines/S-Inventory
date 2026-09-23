@@ -16,7 +16,6 @@ class _iniciologoState extends State<iniciologo> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        height: double.infinity,
         color: AppColors.primary,
          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
