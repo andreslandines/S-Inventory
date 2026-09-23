@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/pages/recoverypassword.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/user_service.dart';
 import '../pages/home.dart';
@@ -139,7 +140,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Recoverypassword()));
+
+                  },
                   child: const Text(
                     '¿Has olvidado tu contraseña?',
                     style: Estilotextos.textoOlvidasteContrasena,
