@@ -18,9 +18,9 @@ class _RecoverypasswordState extends State<Recoverypassword> {
           widthFactor: 0.9,
           heightFactor: 0.9,
         child: Container(
-          margin: const EdgeInsets.all(20),
+          margin: const EdgeInsets.all(1),
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: AppColors.fondo,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppColors.secondary,
