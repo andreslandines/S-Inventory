@@ -106,6 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                style: TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Correo Electrónico',
                   labelStyle: Estilotextos.label,
@@ -116,6 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _contrasenaController,
                 obscureText: !_mostrarContrasena,
+                style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
                   labelStyle: Estilotextos.label,

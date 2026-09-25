@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import '../services/user_service.dart';
+import 'password.dart';
 
 class Recoverypassword extends StatefulWidget {
   const Recoverypassword({super.key});
@@ -12,14 +13,12 @@ class Recoverypassword extends StatefulWidget {
 class _RecoverypasswordState extends State<Recoverypassword> {
   final _emailController = TextEditingController();
   final _codigoController = TextEditingController();
-  final _nuevaContrasenaController = TextEditingController();
   final _userService = UserService();
 
   @override
   void dispose() {
     _emailController.dispose();
     _codigoController.dispose();
-    _nuevaContrasenaController.dispose();
     super.dispose();
   }
 
@@ -42,20 +41,30 @@ class _RecoverypasswordState extends State<Recoverypassword> {
   Future<void> _verificarCodigo() async {
     final email = _emailController.text.trim();
     final codigo = _codigoController.text.trim();
-    final nuevaContrasena = _nuevaContrasenaController.text.trim();
 
-    if (email.isEmpty || codigo.isEmpty || nuevaContrasena.isEmpty) {
+    if (email.isEmpty || codigo.isEmpty) {
       _mostrarMensaje('Completa todos los campos', true);
       return;
     }
 
     try {
-      final respuesta = await _userService.verificarCodigo(
+      await _userService.verificarCodigo(
         email,
         codigo,
-        nuevaContrasena,
+        'temporal',
       );
-      _mostrarMensaje(respuesta['message'], false);
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => password(
+            email: email,
+            codigo: codigo,
+          ),
+        ),
+      );
     } catch (e) {
       _mostrarMensaje(e.toString(), true);
     }
@@ -90,7 +99,8 @@ class _RecoverypasswordState extends State<Recoverypassword> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Text(
+                  const SizedBox(height: 30),
+                  const Text(
                     "S-Inventory",
                     style: TextStyle(
                       color: Colors.white,
@@ -107,8 +117,8 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(
-                    "Cambiar contraseña",
+                  const Text(
+                    "Recuperar contraseña",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 26,
@@ -119,7 +129,8 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                     padding: const EdgeInsets.all(20),
                     child: TextField(
                       controller: _emailController,
-                      decoration: InputDecoration(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
                         labelText: 'Correo electronico',
                         labelStyle: TextStyle(color: Colors.grey),
                         filled: true,
@@ -130,7 +141,7 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                   ),
                   TextButton(
                     onPressed: _enviarCodigo,
-                    child: Text(
+                    child: const Text(
                       'Volver a enviar codigo',
                       style: TextStyle(
                         color: AppColors.fondoComponenteSeleccionado,
@@ -147,7 +158,7 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                           backgroundColor:
                               AppColors.fondoComponenteSeleccionado,
                         ),
-                        child: Text(
+                        child: const Text(
                           "Enviar codigo",
                           style: TextStyle(color: Colors.white),
                         ),
@@ -158,22 +169,9 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                     padding: const EdgeInsets.all(20),
                     child: TextField(
                       controller: _codigoController,
-                      decoration: InputDecoration(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
                         labelText: 'Codigo',
-                        labelStyle: TextStyle(color: Colors.grey),
-                        filled: true,
-                        fillColor: AppColors.primary,
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: TextField(
-                      controller: _nuevaContrasenaController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Nueva contraseña',
                         labelStyle: TextStyle(color: Colors.grey),
                         filled: true,
                         fillColor: AppColors.primary,
@@ -191,13 +189,14 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                           backgroundColor:
                               AppColors.fondoComponenteSeleccionado,
                         ),
-                        child: Text(
+                        child: const Text(
                           "Verificar codigo",
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
