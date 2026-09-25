@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:s_inventory/components/login.dart';
+import 'dart:async';
 import 'package:s_inventory/core/colores.dart';
-import 'package:s_inventory/core/estilostexto.dart';
 
 
-class iniciologo extends StatefulWidget {
-  const iniciologo({super.key});
+class Splashscreen extends StatefulWidget {
+  const Splashscreen({super.key});
 
   @override
-  State<iniciologo> createState() => _iniciologoState();
+  State<Splashscreen> createState() => _SplashscreenState();
 }
 
-class _iniciologoState extends State<iniciologo> {
+class _SplashscreenState extends State<Splashscreen> {
+  @override
+  void initState(){
+    super.initState();
+    Timer(const Duration(seconds: 3), (){
+      Navigator.pushReplacement(context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+   return Scaffold(
       body: Container(
         width: double.infinity,
         color: AppColors.primary,
@@ -24,12 +35,11 @@ class _iniciologoState extends State<iniciologo> {
               child: 
               Image(
                 image: AssetImage("assets/images/logo.png"),
-                width: 80,
-                height: 80,
+                width: 60,
+                height: 60,
                 fit: BoxFit.cover,
               ),
             ),
-            Text("S-Inventory", style:Estilotextos.Titulos),
 
           ],
          ),
