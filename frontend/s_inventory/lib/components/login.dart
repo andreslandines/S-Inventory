@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/core/colores.dart';
-import 'package:s_inventory/pages/recoverypassword.dart';
+import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/user_service.dart';
 import '../pages/home.dart';
@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt_token', respuesta['token']);
       await prefs.setString('user_name', respuesta['usuario']['nombre']);
-      
+
       if (!mounted) return;
 
       Navigator.pushReplacement(
@@ -83,10 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             color: AppColors.primary,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: AppColors.secondary,
-              width: 1.5,
-            ),
+            border: Border.all(color: AppColors.secondary, width: 1.5),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -142,8 +139,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Recoverypassword()));
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const Recoverypassword(),
+                      ),
+                    );
                   },
                   child: const Text(
                     '¿Has olvidado tu contraseña?',
@@ -165,10 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                     : const Text(
                         'Iniciar sesion',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 15),
                       ),
               ),
             ],
