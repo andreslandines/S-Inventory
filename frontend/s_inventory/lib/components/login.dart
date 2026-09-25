@@ -42,8 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final respuesta = await _userService.loginUsuario(email, contrasena);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', respuesta['token']);
-      await prefs.setString('user_name', respuesta['usuario']['nombre']);
+      final token = respuesta['token'] ?? '';
+      await prefs.setString('jwt_token', token);
+      final nombreUsuario = respuesta['usuario']?['nombre'] ?? '';
+      await prefs.setString('user_name', nombreUsuario);
 
       if (!mounted) return;
 
