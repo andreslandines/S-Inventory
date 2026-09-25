@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:s_inventory/pages/iniciologo.dart';
-import 'package:s_inventory/pages/home.dart';
-import 'package:s_inventory/pages/recoverypassword.dart';
 import 'package:s_inventory/components/login.dart';
 
 void main() {
