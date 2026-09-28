@@ -103,9 +103,15 @@ export const login = async(req,res)=>{
             { expiresIn: '1h'}
         );
 
-        return res.status(200).json({
+       return res.status(200).json({
             message: 'login exitoso',
-            token
+            token,
+            usuario: {
+                id_usuario: usuario.id_usuario,
+                nombre: usuario.nombre,
+                email: usuario.email,
+                rol: usuario.rol
+            }
         });
     } catch (error) {
         console.error('Error en el login:', error);

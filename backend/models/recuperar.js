@@ -3,7 +3,7 @@ import { obtenerUsuarioPorId } from "./usuarios.js";
 
 //Crear codigo de recuperacion
 export const crearCodigoDeRecuperacion = async (usuarioId, codigo) => {
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); //Expira en 15 minutos
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); //Expira en 15 minutos
 
     const { data,error } = await supabase
         .from('recovery_codes')
