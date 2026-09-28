@@ -120,10 +120,13 @@ class _passwordState extends State<password> {
                   ),
                   const SizedBox(height: 20),
                   ClipOval(
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 60,
-                      height: 60,
+                    child: SizedBox(
+                        child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -148,7 +151,7 @@ class _passwordState extends State<password> {
                         labelText: 'Nueva contraseña',
                         labelStyle: const TextStyle(color: Colors.grey),
                         filled: true,
-                        fillColor: AppColors.primary,
+                        fillColor: AppColors.fondo,
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -168,16 +171,18 @@ class _passwordState extends State<password> {
                     ),
                   ),
                   if (_nuevaContrasenaController.text.isNotEmpty)
-                    Text(
-                      _contrasenaValida
-                          ? 'Contraseña válida'
-                          : 'Debe tener 8 caracteres, mayúscula, minúscula, número y símbolo',
-                      style: TextStyle(
-                        color: _contrasenaValida
-                            ? Colors.green
-                            : Colors.red,
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Text(
+                        _contrasenaValida
+                            ? '      Contraseña válida.'
+                            : '      Debe tener 8 caracteres, mayúscula, minúscula, \n      número y simbolo.',
+                        style: TextStyle(
+                          color: _contrasenaValida
+                              ? Colors.green
+                              : Colors.red,
+                        ),
                       ),
-                      textAlign: TextAlign.left,
                     ),
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -192,7 +197,7 @@ class _passwordState extends State<password> {
                         labelText: 'Confirmar contraseña',
                         labelStyle: const TextStyle(color: Colors.grey),
                         filled: true,
-                        fillColor: AppColors.primary,
+                        fillColor: AppColors.fondo,
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -212,14 +217,17 @@ class _passwordState extends State<password> {
                     ),
                   ),
                   if (_confirmarContrasenaController.text.isNotEmpty)
-                    Text(
-                      _contrasenasCoinciden
-                          ? 'Las contraseñas coinciden'
-                          : 'Las contraseñas no coinciden',
-                      style: TextStyle(
-                        color: _contrasenasCoinciden
-                            ? Colors.green
-                            : Colors.red,
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Text(
+                        _contrasenasCoinciden
+                            ? '      Las contraseñas coinciden'
+                            : '      Las contraseñas no coinciden',
+                        style: TextStyle(
+                          color: _contrasenasCoinciden
+                              ? Colors.green
+                              : Colors.red,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 20),
@@ -233,13 +241,13 @@ class _passwordState extends State<password> {
                             ? _cambiarContrasena
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              AppColors.fondoComponenteSeleccionado,
+                          backgroundColor:Colors.blue
                         ),
                         child: const Text(
                           "Cambiar contraseña",
                           style: TextStyle(color: Colors.white),
                         ),
+                       
                       ),
                     ),
                   ),

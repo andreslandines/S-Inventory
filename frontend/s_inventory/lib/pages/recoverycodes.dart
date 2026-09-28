@@ -110,10 +110,13 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                   ),
                   const SizedBox(height: 20),
                   ClipOval(
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 60,
-                      height: 60,
+                    child: SizedBox(
+                        child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -132,19 +135,22 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         labelText: 'Correo electronico',
-                        labelStyle: TextStyle(color: Colors.grey),
+                        labelStyle: TextStyle(color: Colors.white),
                         filled: true,
-                        fillColor: AppColors.primary,
+                        fillColor: AppColors.fondo,
                         border: OutlineInputBorder(),
                       ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: _enviarCodigo,
-                    child: const Text(
-                      'Volver a enviar codigo',
-                      style: TextStyle(
-                        color: AppColors.fondoComponenteSeleccionado,
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: TextButton(
+                      onPressed: _enviarCodigo,
+                      child: const Text(
+                        'Volver a enviar codigo   ',
+                        style: TextStyle(
+                          color: AppColors.fondoComponenteSeleccionado,
+                        ),
                       ),
                     ),
                   ),
@@ -172,9 +178,9 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         labelText: 'Codigo',
-                        labelStyle: TextStyle(color: Colors.grey),
+                        labelStyle: TextStyle(color: Colors.white),
                         filled: true,
-                        fillColor: AppColors.primary,
+                        fillColor: AppColors.fondo,
                         border: OutlineInputBorder(),
                       ),
                     ),
