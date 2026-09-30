@@ -85,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             color: AppColors.fondo,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.secondary, width: 1.5),
+            border: Border.all(color: const Color.from(alpha: 1, red: 0.18, green: 0.498, blue: 0.855), width: 1.5),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

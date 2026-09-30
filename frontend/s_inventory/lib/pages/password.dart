@@ -7,90 +7,147 @@ class password extends StatefulWidget {
   final String email;
   final String codigo;
 
-  const password({
-    super.key,
-    required this.email,
-    required this.codigo,
-  });
+  const password({super.key, required this.email, required this.codigo});
 
   @override
   State<password> createState() => _passwordState();
 }
 
 class _passwordState extends State<password> {
-  final _nuevaContrasenaController = TextEditingController();
-  final _confirmarContrasenaController = TextEditingController();
+  final _nueva = TextEditingController();
+  final _confirmar = TextEditingController();
   final _userService = UserService();
 
-  bool _mostrarContrasena = false;
-  bool _mostrarConfirmacion = false;
+  bool _verNueva = false;
+  bool _verConfirmar = false;
 
-  bool get _contrasenaValida {
-    final password = _nuevaContrasenaController.text;
+  String get _pass => _nueva.text;
 
-    return password.length >= 8 &&
-        RegExp(r'[A-Z]').hasMatch(password) &&
-        RegExp(r'[a-z]').hasMatch(password) &&
-        RegExp(r'[0-9]').hasMatch(password) &&
-        RegExp(r'[!@#$%^&*(),.?":{}|<>_\-]').hasMatch(password);
-  }
+  Map<String, bool> get _requisitos => {
+        'Mínimo 8 caracteres': _pass.length >= 8,
+        'Una letra mayúscula': RegExp(r'[A-Z]').hasMatch(_pass),
+        'Una letra minúscula': RegExp(r'[a-z]').hasMatch(_pass),
+        'Un número': RegExp(r'[0-9]').hasMatch(_pass),
+        'Un carácter especial':
+            RegExp(r'[!@#$%^&*(),.?":{}|<>_\-]').hasMatch(_pass),
+      };
 
-  bool get _contrasenasCoinciden {
-    return _nuevaContrasenaController.text ==
-            _confirmarContrasenaController.text &&
-        _confirmarContrasenaController.text.isNotEmpty;
-  }
+  bool get _contrasenaValida => _requisitos.values.every((c) => c);
+
+  bool get _coinciden => _pass == _confirmar.text && _confirmar.text.isNotEmpty;
 
   Future<void> _cambiarContrasena() async {
     if (!_contrasenaValida) {
-      _mostrarMensaje('La contraseña no cumple los requisitos', true);
-      return;
+      return _mostrarMensaje('La contraseña no cumple los requisitos');
     }
-
-    if (!_contrasenasCoinciden) {
-      _mostrarMensaje('Las contraseñas no coinciden', true);
-      return;
+    if (!_coinciden) {
+      return _mostrarMensaje('Las contraseñas no coinciden');
     }
 
     try {
-      await _userService.verificarCodigo(
-        widget.email,
-        widget.codigo,
-        _nuevaContrasenaController.text,
-      );
-
+      await _userService.verificarCodigo(widget.email, widget.codigo, _pass);
       if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
         (route) => false,
       );
     } catch (e) {
-      _mostrarMensaje(e.toString(), true);
+      _mostrarMensaje(e.toString());
     }
   }
 
-  void _mostrarMensaje(String mensaje, bool esError) {
+  void _mostrarMensaje(String mensaje, [bool esError = true]) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: esError ? Colors.red : Colors.green,
+        backgroundColor: esError ? Colors.red.shade700 : Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _requisito(String texto, bool cumplido) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Icon(
+            cumplido ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 17,
+            color: cumplido ? Colors.white : Colors.white38,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            texto,
+            style: TextStyle(
+              color: cumplido ? Colors.white : Colors.white60,
+              fontSize: 13,
+              fontWeight: cumplido ? FontWeight.w500 : FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _campo(
+    String label,
+    TextEditingController controller,
+    bool ver,
+    VoidCallback cambiarVisibilidad,
+  ) {
+    OutlineInputBorder borde(Color color, double ancho) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: color, width: ancho),
+        );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: TextField(
+        controller: controller,
+        obscureText: !ver,
+        onChanged: (_) => setState(() {}),
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          floatingLabelStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.06),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+          enabledBorder: borde(Colors.white24, 1),
+          focusedBorder: borde(Colors.white, 1.5),
+          suffixIcon: IconButton(
+            icon: Icon(
+              ver ? Icons.visibility : Icons.visibility_off,
+              color: Colors.white70,
+            ),
+            onPressed: cambiarVisibilidad,
+          ),
+        ),
       ),
     );
   }
 
   @override
   void dispose() {
-    _nuevaContrasenaController.dispose();
-    _confirmarContrasenaController.dispose();
+    _nueva.dispose();
+    _confirmar.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    const margenRequisitos = EdgeInsets.fromLTRB(25, 10, 25, 0);
+
     return Scaffold(
       backgroundColor: AppColors.fondo,
       body: Center(
@@ -100,159 +157,117 @@ class _passwordState extends State<password> {
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.fondo,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.secondary,
-                width: 1.5,
-              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white12, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 30),
-                  const Text(
-                    "S-Inventory",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w500,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 25),
+                child: Column(
+                  children: [
+                    const Text(
+                      "S-Inventory",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  ClipOval(
-                    child: SizedBox(
-                        child: Image.asset(
+                    const SizedBox(height: 20),
+                    ClipOval(
+                      child: Image.asset(
                         'assets/images/logo.png',
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Cambiar contraseña",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    _campo(
+                      'Nueva contraseña',
+                      _nueva,
+                      _verNueva,
+                      () => setState(() => _verNueva = !_verNueva),
+                    ),
+                    if (_pass.isNotEmpty)
+                      Padding(
+                        padding: margenRequisitos,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _requisitos.entries
+                              .map((e) => _requisito(e.key, e.value))
+                              .toList(),
                         ),
+                      ),
+                    const SizedBox(height: 20),
+                    _campo(
+                      'Confirmar contraseña',
+                      _confirmar,
+                      _verConfirmar,
+                      () => setState(() => _verConfirmar = !_verConfirmar),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Cambiar contraseña",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: TextField(
-                      controller: _nuevaContrasenaController,
-                      obscureText: !_mostrarContrasena,
-                      onChanged: (value) {
-                        setState(() {});
-                      },
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'Nueva contraseña',
-                        labelStyle: const TextStyle(color: Colors.grey),
-                        filled: true,
-                        fillColor: AppColors.fondo,
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _mostrarContrasena
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Colors.white,
+                    if (_confirmar.text.isNotEmpty)
+                      Padding(
+                        padding: margenRequisitos,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _requisito(
+                            'Las contraseñas coinciden',
+                            _coinciden,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _mostrarContrasena =
-                                  !_mostrarContrasena;
-                            });
-                          },
                         ),
                       ),
-                    ),
-                  ),
-                  if (_nuevaContrasenaController.text.isNotEmpty)
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        _contrasenaValida
-                            ? '      Contraseña válida.'
-                            : '      Debe tener 8 caracteres, mayúscula, minúscula, \n      número y simbolo.',
-                        style: TextStyle(
-                          color: _contrasenaValida
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: TextField(
-                      controller: _confirmarContrasenaController,
-                      obscureText: !_mostrarConfirmacion,
-                      onChanged: (value) {
-                        setState(() {});
-                      },
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'Confirmar contraseña',
-                        labelStyle: const TextStyle(color: Colors.grey),
-                        filled: true,
-                        fillColor: AppColors.fondo,
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _mostrarConfirmacion
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Colors.white,
+                    const SizedBox(height: 25),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _contrasenaValida && _coinciden
+                              ? _cambiarContrasena
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.fondo,
+                            disabledBackgroundColor: Colors.white24,
+                            disabledForegroundColor: Colors.white54,
+                            elevation: 4,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _mostrarConfirmacion =
-                                  !_mostrarConfirmacion;
-                            });
-                          },
+                          child: const Text(
+                            "Cambiar contraseña",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if (_confirmarContrasenaController.text.isNotEmpty)
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        _contrasenasCoinciden
-                            ? '      Las contraseñas coinciden'
-                            : '      Las contraseñas no coinciden',
-                        style: TextStyle(
-                          color: _contrasenasCoinciden
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _contrasenaValida &&
-                                _contrasenasCoinciden
-                            ? _cambiarContrasena
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:Colors.blue
-                        ),
-                        child: const Text(
-                          "Cambiar contraseña",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                       
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 15),
+                  ],
+                ),
               ),
             ),
           ),
