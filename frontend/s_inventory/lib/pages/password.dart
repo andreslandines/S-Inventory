@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/pages/recoverycodes.dart';
 import '../services/user_service.dart';
 import '../components/login.dart';
 
@@ -172,6 +173,20 @@ class _passwordState extends State<password> {
                 padding: const EdgeInsets.symmetric(vertical: 25),
                 child: Column(
                   children: [
+
+                    Align(alignment: Alignment.topLeft,
+                      child: Padding(padding: const EdgeInsets.only(left: 2, top: 2),
+                        child: IconButton(onPressed: () {Navigator.push(context,
+                      MaterialPageRoute(
+                    builder: (context) => const Recoverypassword(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
                     const Text(
                       "S-Inventory",
                       style: TextStyle(
@@ -247,8 +262,8 @@ class _passwordState extends State<password> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.fondo,
-                            disabledBackgroundColor: Colors.white24,
-                            disabledForegroundColor: Colors.white54,
+                            disabledBackgroundColor: Colors.white,
+                            disabledForegroundColor: AppColors.fondo,
                             elevation: 4,
                             padding: const EdgeInsets.symmetric(vertical: 15),
                             shape: RoundedRectangleBorder(

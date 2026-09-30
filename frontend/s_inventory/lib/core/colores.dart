@@ -21,7 +21,5 @@ class AppColors {
     0xFF193A5B,
   ); //Tarjetas, formularios y paneles
 
-  static const Color fondoComponenteSeleccionado = Color(
-    0xFF2E7FDA,
-  ); //Elemento seleccionado/activo
+  static const Color fondoComponenteSeleccionado = Color(0xFF16365B); //Elemento seleccionado/activo
 }
