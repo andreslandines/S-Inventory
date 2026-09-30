@@ -1,5 +1,7 @@
 //lib/pages/home.dart
 import 'package:flutter/material.dart';
+import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/pages/splashcreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../components/login.dart';
 
@@ -38,7 +40,7 @@ Future<void> _cerrarSesion() async {
 
   Navigator.pushReplacement(
     context,
-    MaterialPageRoute(builder: (context) => const LoginScreen()),
+    MaterialPageRoute(builder: (context) => const Splashscreen()),
   );
 }
 
@@ -46,14 +48,16 @@ Future<void> _cerrarSesion() async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inicio',
+        backgroundColor: AppColors.fondo,
+        title: Text('Bienvenido, $_nombre',
         style:  TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
+            color: Colors.white
           )),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _cerrarSesion,
           ),
         ],
