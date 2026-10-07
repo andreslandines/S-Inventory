@@ -67,20 +67,41 @@ Future<void> _cerrarSesion() async {
     return Scaffold(
       backgroundColor: AppColors.fondo,
       appBar: AppBar(
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications,
+               color: Colors.white,
+              size: 20,),
+              
+              onPressed: () {
+                // Acción para notificaciones
+              },
+            ),
+            const SizedBox(width: 4), // Pequeño espacio opcional entre iconos
+            GestureDetector(
+              onTap: () {
+                // Acción para el perfil
+              },
+              child: Icon(Icons.account_circle,
+                color: Colors.white,
+                size: 20,
+              )
+            ),
+            const SizedBox(width: 16), // Espacio final para que no pegue al borde de la pantalla
+          ],
       backgroundColor: AppColors.fondo,
       toolbarHeight: 60,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
             children: [
+               
+
               Text(
-              ' Bienvenido $_nombre',
-              style: Estilotextos.Titulos.copyWith(fontSize: 22),
+              ' Bienvenida $_nombre',
+              style: Estilotextos.subtitulos,
               ),
-              Text(
-              ' $_correo',
-              style: Estilotextos.textoSecundario,
-              ),
+              
             ],
           ),
     ),
@@ -100,11 +121,11 @@ Future<void> _cerrarSesion() async {
           unselectedLabelColor: Colors.grey,
           indicator: BoxDecoration(),
           tabs: const [
-            Tab(icon: Icon(Icons.home), text: 'Inicio'),
-            Tab(icon: Icon(Icons.inventory_sharp), text: 'Inventario'),
-            Tab(icon: Icon(Icons.chat_outlined), text: 'BoxIA'),
-            Tab(icon: Icon(Icons.report_gmailerrorred_outlined), text: 'Reportes'),
-            Tab(icon: Icon(Icons.person), text: 'Ajustes'),
+            Tab(icon: Icon(Icons.home), text: ''),
+            Tab(icon: Icon(Icons.inventory_sharp), text: ''),
+            Tab(icon: Icon(Icons.auto_awesome ), text: ''),
+            Tab(icon: Icon(Icons.report_gmailerrorred_outlined), text: ''),
+            Tab(icon: Icon(Icons.person), text: ''),
             ],
           ),
       );
