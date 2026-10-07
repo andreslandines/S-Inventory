@@ -8,7 +8,11 @@ class password extends StatefulWidget {
   final String email;
   final String codigo;
 
-  const password({super.key, required this.email, required this.codigo});
+  const password({
+    super.key,
+    required this.email,
+    required this.codigo,
+  });
 
   @override
   State<password> createState() => _passwordState();
@@ -35,23 +39,32 @@ class _passwordState extends State<password> {
 
   bool get _contrasenaValida => _requisitos.values.every((c) => c);
 
-  bool get _coinciden => _pass == _confirmar.text && _confirmar.text.isNotEmpty;
+  bool get _coinciden =>
+      _pass == _confirmar.text && _confirmar.text.isNotEmpty;
 
   Future<void> _cambiarContrasena() async {
     if (!_contrasenaValida) {
       return _mostrarMensaje('La contraseña no cumple los requisitos');
     }
+
     if (!_coinciden) {
       return _mostrarMensaje('Las contraseñas no coinciden');
     }
 
     try {
-      await _userService.verificarCodigo(widget.email, widget.codigo, _pass);
+      await _userService.verificarCodigo(
+        widget.email,
+        widget.codigo,
+        _pass,
+      );
+
       if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
         (route) => false,
       );
     } catch (e) {
@@ -63,10 +76,13 @@ class _passwordState extends State<password> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: esError ? Colors.red.shade700 : Colors.green.shade700,
+        backgroundColor:
+            esError ? Colors.red.shade700 : Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
@@ -77,7 +93,9 @@ class _passwordState extends State<password> {
       child: Row(
         children: [
           Icon(
-            cumplido ? Icons.check_circle : Icons.radio_button_unchecked,
+            cumplido
+                ? Icons.check_circle
+                : Icons.radio_button_unchecked,
             size: 17,
             color: cumplido ? Colors.white : Colors.white38,
           ),
@@ -87,7 +105,8 @@ class _passwordState extends State<password> {
             style: TextStyle(
               color: cumplido ? Colors.white : Colors.white60,
               fontSize: 13,
-              fontWeight: cumplido ? FontWeight.w500 : FontWeight.w400,
+              fontWeight:
+                  cumplido ? FontWeight.w500 : FontWeight.w400,
             ),
           ),
         ],
@@ -101,9 +120,13 @@ class _passwordState extends State<password> {
     bool ver,
     VoidCallback cambiarVisibilidad,
   ) {
-    OutlineInputBorder borde(Color color, double ancho) => OutlineInputBorder(
+    OutlineInputBorder borde(Color color, double ancho) =>
+        OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: color, width: ancho),
+          borderSide: BorderSide(
+            color: color,
+            width: ancho,
+          ),
         );
 
     return Padding(
@@ -115,20 +138,26 @@ class _passwordState extends State<password> {
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: const TextStyle(
+            color: Colors.white70,
+          ),
           floatingLabelStyle: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
           filled: true,
           fillColor: Colors.white.withOpacity(0.06),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 15,
+            vertical: 16,
+          ),
           enabledBorder: borde(Colors.white24, 1),
           focusedBorder: borde(Colors.white, 1.5),
           suffixIcon: IconButton(
             icon: Icon(
-              ver ? Icons.visibility : Icons.visibility_off,
+              ver
+                  ? Icons.visibility
+                  : Icons.visibility_off,
               color: Colors.white70,
             ),
             onPressed: cambiarVisibilidad,
@@ -147,7 +176,8 @@ class _passwordState extends State<password> {
 
   @override
   Widget build(BuildContext context) {
-    const margenRequisitos = EdgeInsets.fromLTRB(25, 10, 25, 0);
+    const margenRequisitos =
+        EdgeInsets.fromLTRB(25, 10, 25, 0);
 
     return Scaffold(
       backgroundColor: AppColors.fondo,
@@ -159,7 +189,10 @@ class _passwordState extends State<password> {
             decoration: BoxDecoration(
               color: AppColors.fondo,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white12, width: 1),
+              border: Border.all(
+                color: Colors.white12,
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.25),
@@ -168,122 +201,172 @@ class _passwordState extends State<password> {
                 ),
               ],
             ),
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 25),
-                child: Column(
-                  children: [
-
-                    Align(alignment: Alignment.topLeft,
-                      child: Padding(padding: const EdgeInsets.only(left: 2, top: 2),
-                        child: IconButton(onPressed: () {Navigator.push(context,
-                      MaterialPageRoute(
-                    builder: (context) => const Recoverypassword(),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 2,
+                  left: 2,
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const Recoverypassword(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-                    const Text(
-                      "S-Inventory",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ClipOval(
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Cambiar contraseña",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    _campo(
-                      'Nueva contraseña',
-                      _nueva,
-                      _verNueva,
-                      () => setState(() => _verNueva = !_verNueva),
-                    ),
-                    if (_pass.isNotEmpty)
-                      Padding(
-                        padding: margenRequisitos,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: _requisitos.entries
-                              .map((e) => _requisito(e.key, e.value))
-                              .toList(),
-                        ),
-                      ),
-                    const SizedBox(height: 20),
-                    _campo(
-                      'Confirmar contraseña',
-                      _confirmar,
-                      _verConfirmar,
-                      () => setState(() => _verConfirmar = !_verConfirmar),
-                    ),
-                    if (_confirmar.text.isNotEmpty)
-                      Padding(
-                        padding: margenRequisitos,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: _requisito(
-                            'Las contraseñas coinciden',
-                            _coinciden,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 25),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _contrasenaValida && _coinciden
-                              ? _cambiarContrasena
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.fondo,
-                            disabledBackgroundColor: Colors.white,
-                            disabledForegroundColor: AppColors.fondo,
-                            elevation: 4,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            "Cambiar contraseña",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                  ],
                 ),
-              ),
+
+                Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 25,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipOval(
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        const Text(
+                          "S-Inventory",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        const Text(
+                          "Cambiar contraseña",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        _campo(
+                          'Nueva contraseña',
+                          _nueva,
+                          _verNueva,
+                          () => setState(
+                            () => _verNueva = !_verNueva,
+                          ),
+                        ),
+
+                        if (_pass.isNotEmpty)
+                          Padding(
+                            padding: margenRequisitos,
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: _requisitos.entries
+                                  .map(
+                                    (e) => _requisito(
+                                      e.key,
+                                      e.value,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+
+                        const SizedBox(height: 20),
+
+                        _campo(
+                          'Confirmar contraseña',
+                          _confirmar,
+                          _verConfirmar,
+                          () => setState(
+                            () => _verConfirmar =
+                                !_verConfirmar,
+                          ),
+                        ),
+
+                        if (_confirmar.text.isNotEmpty)
+                          Padding(
+                            padding: margenRequisitos,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: _requisito(
+                                'Las contraseñas coinciden',
+                                _coinciden,
+                              ),
+                            ),
+                          ),
+
+                        const SizedBox(height: 25),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                          ),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed:
+                                  _contrasenaValida &&
+                                          _coinciden
+                                      ? _cambiarContrasena
+                                      : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor:
+                                    AppColors.fondo,
+                                disabledBackgroundColor:
+                                    Colors.white,
+                                disabledForegroundColor:
+                                    AppColors.fondo,
+                                elevation: 4,
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                                shape:
+                                    RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                "Cambiar contraseña",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

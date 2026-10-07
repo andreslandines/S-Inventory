@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/pages/splashcreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../components/login.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -48,7 +47,7 @@ Future<void> _cerrarSesion() async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.fondo,
+        backgroundColor: const Color.fromRGBO(14, 33, 54, 1),
         title: Text('Bienvenido, $_nombre',
         style:  TextStyle(
             fontSize: 22,

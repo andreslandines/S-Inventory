@@ -108,4 +108,36 @@ Future<Map<String, dynamic>> verificarCodigo(
     );
   }
 }
+Future<Map<String, dynamic>> validarCodigo(
+  String email,
+  String codigo,
+) async {
+  final url = Uri.parse('${ApiConfig.baseUrl}/validate-code');
+
+  try {
+    final response = await http.post(
+      url,
+      headers: ApiConfig.headers,
+      body: jsonEncode({
+        'email': email,
+        'codigo': codigo,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return responseData;
+    } else {
+      throw Exception(
+        responseData['error'] ?? 'Código inválido o expirado',
+      );
+    }
+  } catch (e) {
+    throw Exception(
+      e.toString().replaceAll('Exception: ', ''),
+    );
+  }
 }
+}
+

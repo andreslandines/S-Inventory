@@ -63,7 +63,7 @@ static const TextStyle label = TextStyle(
 );
 
 static const TextStyle textoOlvidasteContrasena = TextStyle(
-  color: AppColors.fondoComponenteSeleccionado,
+  color: Color.fromARGB(255, 47, 126, 216),
   fontSize: 14,
 );
 
