@@ -142,3 +142,47 @@ export const verifyCode = async (req, res) => {
 
     
 };
+
+export const validateCode = async (req, res) => {
+    try {
+        const { email, codigo } = req.body;
+
+        if (!email || !codigo) {
+            return res.status(400).json({
+                error: 'El correo y el código son requeridos'
+            });
+        }
+
+        const { data: usuario, error: errorUsuario } =
+            await obtenerPorEmail(email);
+
+        if (errorUsuario || !usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        const { data: codigoRecord, error: errorCodigo } =
+            await obtenerCodigoValido(
+                usuario.id_usuario,
+                codigo
+            );
+
+        if (errorCodigo || !codigoRecord) {
+            return res.status(400).json({
+                error: 'Código de recuperación inválido o expirado'
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Código válido'
+        });
+
+    } catch (error) {
+        console.error('Error en validateCode:', error);
+
+        return res.status(500).json({
+            error: 'Error al validar el código'
+        });
+    }
+};

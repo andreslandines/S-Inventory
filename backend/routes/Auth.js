@@ -1,6 +1,6 @@
 import express from "express";
 import { registro,login } from "../controllers/Auth.js";
-import { forgotPassword,verifyCode } from "../controllers/recuperar.js";
+import { forgotPassword,verifyCode,validateCode} from "../controllers/recuperar.js";
 import { autenticarConGoogle } from "../controllers/googleauth.controller.js";
 
 
@@ -13,6 +13,7 @@ router.post('/login', login);
 
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-code', verifyCode);
+router.post('/validate-code', validateCode);
 // Endpoint: POST /api/auth/google
 router.post("/google", autenticarConGoogle);
 

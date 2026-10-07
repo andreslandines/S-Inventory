@@ -92,7 +92,6 @@ class _RecoverypasswordState extends State<Recoverypassword> {
       await _userService.validarCodigo(
         email,
         codigo,
-        
       );
 
       if (!mounted) return;
@@ -173,9 +172,7 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
-
                     ClipOval(
                       child: Image(
                         image: const AssetImage(
@@ -186,21 +183,16 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         fit: BoxFit.cover,
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
                     Text(
                       "S-Inventory",
                       style: Estilotextos.Titulos,
                     ),
-
                     Text(
                       "Gestion inteligente de inventario",
                       style: Estilotextos.textoSecundario,
                     ),
-
                     const SizedBox(height: 50),
-
                     const Text(
                       "Recuperar contraseña",
                       style: TextStyle(
@@ -209,15 +201,12 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     _campo(
                       'Correo electrónico',
                       _emailController,
                     ),
                     const SizedBox(height: 10),
-
                     Align(
                       alignment: Alignment.bottomRight,
                       child: TextButton(
@@ -228,9 +217,7 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -242,8 +229,6 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.fondo,
-                            disabledBackgroundColor: Colors.white,
-                            disabledForegroundColor: AppColors.fondo,
                             elevation: 4,
                             padding: const EdgeInsets.symmetric(
                               vertical: 12,
@@ -262,15 +247,12 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
-
                     _campo(
                       'Codigo',
                       _codigoController,
                     ),
                     const SizedBox(height: 30),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -282,8 +264,6 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.fondo,
-                            disabledBackgroundColor: Colors.white,
-                            disabledForegroundColor: AppColors.fondo,
                             elevation: 4,
                             padding: const EdgeInsets.symmetric(
                               vertical: 12,
@@ -302,7 +282,6 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 200),
                   ],
                 ),
