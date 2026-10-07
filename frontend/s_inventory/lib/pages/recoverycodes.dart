@@ -150,7 +150,7 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         child: const Text(
                           'Volver a enviar codigo   ',
                           style: TextStyle(
-                            color: AppColors.fondoComponenteSeleccionado,
+                            color: AppColors.secondary,
                           ),
                         ),
                       ),
