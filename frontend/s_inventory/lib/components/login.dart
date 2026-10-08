@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/pages/home.dart';
 import 'package:s_inventory/pages/recoverycodes.dart';
-import 'package:s_inventory/pages/splashcreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/user_service.dart';
 
@@ -153,8 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const Splashscreen(
-            irAlHome: true,
+          builder: (context) => const HomeScreen(
           ),
         ),
       );

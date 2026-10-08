@@ -40,7 +40,7 @@ class _SplashscreenState extends State<Splashscreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        color: AppColors.primary,
+        color: AppColors.fondo,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
