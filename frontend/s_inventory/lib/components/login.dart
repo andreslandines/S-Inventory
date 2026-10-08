@@ -115,6 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final nombreUsuario = respuesta['usuario']?['nombre'] ?? '';
       await prefs.setString('user_name', nombreUsuario);
 
+      await prefs.setString('user_correo', email); 
+
       if (!mounted) return;
 
       Navigator.pushReplacement(
@@ -279,4 +281,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

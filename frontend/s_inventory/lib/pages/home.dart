@@ -98,7 +98,7 @@ Future<void> _cerrarSesion() async {
                
 
               Text(
-              ' Bienvenida $_nombre',
+              ' Bienvenid@ $_nombre',
               style: Estilotextos.subtitulos,
               ),
               
