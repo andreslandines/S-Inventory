@@ -1,16 +1,18 @@
-//lib/pages/home.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:s_inventory/components/app_bar_home.dart';
+import 'package:s_inventory/components/bottom_navigation.dart';
+import 'package:s_inventory/components/perfil_dialog.dart';
+import 'package:s_inventory/components/login.dart';
+
 import 'package:s_inventory/core/colores.dart';
-import 'package:s_inventory/core/estilostexto.dart';
-import 'package:s_inventory/pages/ajustes.dart';
-import 'package:s_inventory/pages/boxia.dart';
+
 import 'package:s_inventory/pages/home1.dart';
 import 'package:s_inventory/pages/inventario.dart';
+import 'package:s_inventory/pages/boxia.dart';
 import 'package:s_inventory/pages/reportes.dart';
-import 'package:s_inventory/pages/splashcreen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../components/login.dart';
-
+import 'package:s_inventory/pages/ajustes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,15 +22,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin{
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
   String _nombre = '';
   String _correo = '';
-  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+
+    _tabController = TabController(
+      length: 5,
+      vsync: this,
+    );
+
     _cargarUsuario();
   }
 
@@ -37,97 +45,63 @@ class _HomeScreenState extends State<HomeScreen>
     _tabController.dispose();
     super.dispose();
   }
-  
 
-  // Lee el nombre guardado en el login, para mostrarlo en pantalla
-Future<void> _cargarUsuario() async {
-  final prefs = await SharedPreferences.getInstance();
+  Future<void> _cargarUsuario() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  setState(() {
-    _nombre = prefs.getString('user_name') ?? 'Usuario';
-    _correo = prefs.getString('user_email') ?? 'Correo no disponible';
-  });
-}
+    if (!mounted) return;
 
-// Cierra sesión: borra el token guardado y regresa al Login
-Future<void> _cerrarSesion() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.clear();
+    setState(() {
+      _nombre = prefs.getString('user_name') ?? 'Usuario';
+      _correo = prefs.getString('user_email') ?? '';
+    });
+  }
 
-  if (!mounted) return;
+  Future<void> _cerrarSesion() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => const Splashscreen()),
-  );
-}
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
+      (route) => false,
+    );
+  }
+
+  void _mostrarPerfil() {
+    mostrarPerfil(
+      context: context,
+      nombre: _nombre,
+      correo: _correo,
+      cerrarSesion: _cerrarSesion,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.fondo,
-      appBar: AppBar(
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications,
-               color: Colors.white,
-              size: 20,),
-              
-              onPressed: () {
-                // Acción para notificaciones
-              },
-            ),
-            const SizedBox(width: 4), // Pequeño espacio opcional entre iconos
-            GestureDetector(
-              onTap: () {
-                // Acción para el perfil
-              },
-              child: Icon(Icons.account_circle,
-                color: Colors.white,
-                size: 20,
-              )
-            ),
-            const SizedBox(width: 16), // Espacio final para que no pegue al borde de la pantalla
-          ],
-      backgroundColor: AppColors.fondo,
-      toolbarHeight: 60,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-               
-
-              Text(
-              ' Bienvenid@ $_nombre',
-              style: Estilotextos.subtitulos,
-              ),
-              
-            ],
-          ),
-    ),
+      appBar: AppBarHome(
+        nombre: _nombre,
+        onPerfil: _mostrarPerfil,
+      ),
       body: TabBarView(
-  controller: _tabController,
-  children: [
-        Home1(),
-        Inventario(),
-        Boxia(),
-        Reportes(),
-        Ajustes(),
+        controller: _tabController,
+        children: const [
+          Home1(),
+          Inventario(),
+          Boxia(),
+          Reportes(),
+          Ajustes(),
         ],
       ),
-      bottomNavigationBar: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.grey,
-          indicator: BoxDecoration(),
-          tabs: const [
-            Tab(icon: Icon(Icons.home), text: ''),
-            Tab(icon: Icon(Icons.inventory_sharp), text: ''),
-            Tab(icon: Icon(Icons.auto_awesome ), text: ''),
-            Tab(icon: Icon(Icons.report_gmailerrorred_outlined), text: ''),
-            Tab(icon: Icon(Icons.person), text: ''),
-            ],
-          ),
-      );
-    }
+      bottomNavigationBar: BottomNavigation(
+        controller: _tabController,
+      ),
+    );
   }
+}

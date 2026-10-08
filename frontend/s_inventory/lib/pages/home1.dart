@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/components/buscador_productos.dart';
 
-class Home1 extends StatefulWidget {
+class Home1 extends StatelessWidget {
   const Home1({super.key});
 
   @override
-  State<Home1> createState() => _Home1State();
-}
-
-class _Home1State extends State<Home1> {
-  @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      margin: const EdgeInsets.only(
+        left: 10,
+        right: 10,
+        bottom: 10,
+      ),
       decoration: BoxDecoration(
         color: AppColors.fondo,
         borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: Colors.white12, width: 1),
+        border: Border.all(
+          color: Colors.white12,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.25),
@@ -25,15 +28,9 @@ class _Home1State extends State<Home1> {
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          'Bienvenido a Inicio',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      child: const Padding(
+        padding: EdgeInsets.all(20),
+        child: BuscadorProductos(),
       ),
     );
   }

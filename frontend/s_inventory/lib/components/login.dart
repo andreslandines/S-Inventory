@@ -44,10 +44,14 @@ class _LoginScreenState extends State<LoginScreen> {
         keyboardType: contrasena
             ? TextInputType.text
             : TextInputType.emailAddress,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(
+          color: Colors.white,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: const TextStyle(
+            color: Colors.white70,
+          ),
           floatingLabelStyle: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w500,
@@ -58,8 +62,14 @@ class _LoginScreenState extends State<LoginScreen> {
             horizontal: 15,
             vertical: 16,
           ),
-          enabledBorder: borde(Colors.white24, 1),
-          focusedBorder: borde(Colors.white, 1.5),
+          enabledBorder: borde(
+            Colors.white24,
+            1,
+          ),
+          focusedBorder: borde(
+            Colors.white,
+            1.5,
+          ),
           suffixIcon: contrasena
               ? IconButton(
                   icon: Icon(
@@ -110,10 +120,31 @@ class _LoginScreenState extends State<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
 
       final token = respuesta['token'] ?? '';
-      await prefs.setString('jwt_token', token);
+      await prefs.setString(
+        'jwt_token',
+        token,
+      );
 
-      final nombreUsuario = respuesta['usuario']?['nombre'] ?? '';
-      await prefs.setString('user_name', nombreUsuario);
+      final usuario = respuesta['usuario'] ?? {};
+
+      final nombreUsuario = usuario['nombre'] ?? '';
+      final correoUsuario = usuario['email'] ?? email;
+      final rolUsuario = usuario['rol'] ?? 'Usuario';
+
+      await prefs.setString(
+        'user_name',
+        nombreUsuario,
+      );
+
+      await prefs.setString(
+        'user_email',
+        correoUsuario,
+      );
+
+      await prefs.setString(
+        'user_role',
+        rolUsuario,
+      );
 
       await prefs.setString('user_correo', email); 
 
