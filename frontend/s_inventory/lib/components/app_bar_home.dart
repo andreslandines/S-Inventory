@@ -19,6 +19,7 @@ class AppBarHome extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: AppColors.fondo,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -29,7 +30,7 @@ class AppBarHome extends StatelessWidget
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Bienvenido',
+            'Bienvenid@',
             style: TextStyle(
               color: Colors.white.withOpacity(0.55),
               fontSize: 12,

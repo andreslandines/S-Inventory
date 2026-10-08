@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:s_inventory/components/ajustesopciones.dart';
+import 'package:s_inventory/components/login.dart';
 import 'package:s_inventory/core/colores.dart';
-import 'package:s_inventory/pages/splashcreen.dart';
+import 'package:s_inventory/pages/perfil.dart';
+import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Ajustes extends StatefulWidget {
@@ -9,13 +12,14 @@ class Ajustes extends StatefulWidget {
   @override
   State<Ajustes> createState() => _AjustesState();
 }
+
 class _AjustesState extends State<Ajustes> {
   String _correo = '';
 
   @override
   void initState() {
     super.initState();
-    _cargarUsuario(); 
+    _cargarUsuario();
   }
 
   Future<void> _cargarUsuario() async {
@@ -43,90 +47,88 @@ class _AjustesState extends State<Ajustes> {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 30),
-                Container(
-                  width: 130,
-                  height: 130,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary, // color de la segunda imagen
-                    border: Border.all(color: Colors.white24, width: 1),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 30),
+                  Container(
+                    width: 115,
+                    height: 115,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary,
+                      border: Border.all(color: Colors.white24, width: 1),
+                    ),
+                    child: const Icon(Icons.person, color: Colors.white, size: 60),
                   ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 70),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  _correo, // correo automático
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 22,
+                  const SizedBox(height: 10),
+                  Text(
+                    _correo,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 19,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
-          const Text('CUENTA', style: TextStyle(color: Colors.grey, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          _opcionMenu(icon: Icons.person, texto: 'Editar perfil'),
-          _opcionMenu(icon: Icons.lock, texto: 'Cambiar contraseña'),
-          _opcionMenu(icon: Icons.cloud, texto: 'Notificaciones'),
-          const SizedBox(height: 16),
-          const Text('PREFERENCIAS', style: TextStyle(color: Colors.grey, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          _opcionConToggle(icon: Icons.notifications, texto: 'Notificaciones', valorInicial: true),
-          _opcionConToggle(icon: Icons.cloud, texto: 'Respaldo en la nube', valorInicial: true),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: ElevatedButton(
-              onPressed: () {
-
-                          },
-              style: ElevatedButton.styleFrom(
-                elevation: 4,
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-              child: const Text('Cerrar sesión', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 40),
+            const Text(
+              'CUENTA',
+              style: TextStyle(color: Colors.grey, fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            OpcionMenu1(),
+            OpcionMenu2(),
+            OpcionMenu3(),
+            const SizedBox(height: 16),
+            const Text(
+              'PREFERENCIAS',
+              style: TextStyle(color: Colors.grey, fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const OpcionConToggle1(),
+            const OpcionConToggle2(),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 45,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  elevation: 4,
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Cerrar sesión',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 17),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _opcionMenu({required IconData icon, required String texto}) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: Colors.white),
-      title: Text(texto, style: const TextStyle(color: Colors.white, fontSize: 21)),
-      trailing: const Icon(Icons.chevron_right, color: Colors.white54),
-      onTap: () {},
-    );
-  }
-
-  Widget _opcionConToggle({required IconData icon, required String texto, required bool valorInicial}) {
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      secondary: Icon(icon, color: Colors.white),
-      title: Text(texto, style: const TextStyle(color: Colors.white, fontSize: 21)),
-      value: valorInicial,
-      activeTrackColor: AppColors.primary,
-      activeThumbColor: Colors.white,
-      onChanged: (valor) {},
     );
   }
 }
