@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'api_config.dart'; 
 class ChatBoxIAService {
   // Concatena directamente con tu baseUrl existente ('.../api/chatbot')
-  static String get _chatUrl => '${ApiConfig.baseUrl}/chatbot';
+  static String get _chatUrl => '${ApiConfig.baseUrl}/api/chatbot';
 
   static Future<String> enviarMensaje(String mensaje, {String? sesionId}) async {
     try {
@@ -12,7 +12,7 @@ class ChatBoxIAService {
         headers: ApiConfig.headers,
         body: jsonEncode({
           'mensaje': mensaje,
-          'sesionId': sesionId ?? 'mimos_cliente_${DateTime.now().millisecondsSinceEpoch}',
+          'sesionId': sesionId ?? 'usuario_S-Inventory_${DateTime.now().millisecondsSinceEpoch}',
         }),
       );
 
@@ -23,7 +23,7 @@ class ChatBoxIAService {
         return 'En este momento no pudimos procesar tu solicitud.';
       }
     } catch (e) {
-      return 'Error de conexion con la heladeria. Revisa tu servidor.';
+      return 'Error de conexion con el inventario S-Inventory. Revisa tu servidor.';
     }
   }
 }

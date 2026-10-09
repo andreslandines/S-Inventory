@@ -6,24 +6,14 @@ class ChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 12),
-        Container(
-          width: 42,
-          height: 4.5,
-          decoration: BoxDecoration(
-            color: Colors.black12,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
               const CircleAvatar(
                 backgroundColor: Color.fromARGB(255, 21, 78, 202),
-                child: Icon(Icons.inventory_2, color: Colors.white),
+                child: Icon(Icons.auto_awesome, color: Colors.white),
               ),
               const SizedBox(width: 12),
               Column(

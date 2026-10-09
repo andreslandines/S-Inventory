@@ -4,9 +4,9 @@ import 'api_config.dart';
 
 
 class UserService {
-   // Petición POST para iniciar sesión (NUEVO, dentro de la misma clase)
+   // Petición POST para iniciar sesión
 Future<Map<String, dynamic>> loginUsuario(String email, String contrasena) async {
-  final url = Uri.parse('${ApiConfig.baseUrl}/login');
+  final url = Uri.parse('${ApiConfig.authUrl}/login');
 
   try {
     final response = await http.post(
@@ -22,14 +22,11 @@ Future<Map<String, dynamic>> loginUsuario(String email, String contrasena) async
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = jsonDecode(response.body);
-    
-      // Devuelve el mapa completo con 'token' y 'usuario' tal como lo responde el backend
       return responseData;
     } else {
       if (contentType.contains('application/json')) {
         final Map<String, dynamic> errorData = jsonDecode(response.body);
 
-        // El backend Express envía el mensaje en la clave 'error'
         final String mensajeError =
             errorData['error'] ??
             errorData['message'] ??
@@ -48,7 +45,7 @@ Future<Map<String, dynamic>> loginUsuario(String email, String contrasena) async
 }
 
 Future<Map<String, dynamic>> enviarCodigo(String email) async {
-  final url = Uri.parse('${ApiConfig.baseUrl}/forgot-password');
+  final url = Uri.parse('${ApiConfig.authUrl}/forgot-password');
 
   try {
     final response = await http.post(
@@ -80,7 +77,7 @@ Future<Map<String, dynamic>> verificarCodigo(
   String codigo,
   String newPasswords,
 ) async {
-  final url = Uri.parse('${ApiConfig.baseUrl}/verify-code');
+  final url = Uri.parse('${ApiConfig.authUrl}/verify-code');
 
   try {
     final response = await http.post(
@@ -108,11 +105,12 @@ Future<Map<String, dynamic>> verificarCodigo(
     );
   }
 }
+
 Future<Map<String, dynamic>> validarCodigo(
   String email,
   String codigo,
 ) async {
-  final url = Uri.parse('${ApiConfig.baseUrl}/validate-code');
+  final url = Uri.parse('${ApiConfig.authUrl}/validate-code');
 
   try {
     final response = await http.post(
@@ -140,4 +138,3 @@ Future<Map<String, dynamic>> validarCodigo(
   }
 }
 }
-

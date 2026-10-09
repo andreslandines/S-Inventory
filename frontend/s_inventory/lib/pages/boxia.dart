@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:s_inventory/components/ChatModal.dart';
 import 'package:s_inventory/core/colores.dart';
 
 class Boxia extends StatefulWidget {
@@ -14,7 +15,7 @@ class _BoxiaState extends State<Boxia> {
     return Container(
       margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
       decoration: BoxDecoration(
-        color: AppColors.fondo,
+        color: AppColors.fondoComponentes,
         borderRadius: BorderRadius.circular(5),
         border: Border.all(color: Colors.white12, width: 1),
         boxShadow: [
@@ -25,16 +26,7 @@ class _BoxiaState extends State<Boxia> {
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          'Bienvenido a Inicio',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      child: const ChatBoxiaModal(),
     );
   }
 }
