@@ -6,7 +6,8 @@ import '../services/user_service.dart';
 import 'password.dart';
 
 class Recoverypassword extends StatefulWidget {
-  const Recoverypassword({super.key});
+  final bool desdeAjustes;
+  const Recoverypassword({super.key, this.desdeAjustes = false});
 
   @override
   State<Recoverypassword> createState() => _RecoverypasswordState();
@@ -156,13 +157,19 @@ class _RecoverypasswordState extends State<Recoverypassword> {
                         ),
                         child: IconButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const LoginScreen(),
-                              ),
-                            );
+                            if (widget.desdeAjustes) {
+                              // Viene de Ajustes -> vuelve a Ajustes
+                              Navigator.pop(context);
+                            } else {
+                              // Viene del Login -> vuelve al Login
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const LoginScreen(),
+                                ),
+                              );
+                            }
                           },
                           icon: const Icon(
                             Icons.arrow_back_ios_new,

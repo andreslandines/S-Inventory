@@ -53,10 +53,8 @@ class OpcionMenu2 extends StatelessWidget {
           size: 23,
         ),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const Recoverypassword(),
+          Navigator.push(context,
+            MaterialPageRoute( builder: (context) => const Recoverypassword(desdeAjustes: true),
             ),
           );
         },
