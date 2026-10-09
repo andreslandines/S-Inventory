@@ -52,12 +52,12 @@ class _AjustesState extends State<Ajustes> {
     return Container(
       margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
       decoration: BoxDecoration(
-        color: AppColors.fondo,
-        borderRadius: BorderRadius.circular(5),
+                color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.white12, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+                  color: Colors.white.withOpacity(0.02),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -79,12 +79,12 @@ class _AjustesState extends State<Ajustes> {
                   height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary,
+                    color: Colors.white,
                     border: Border.all(color: Colors.white24, width: 1),
                   ),
                   child: const Icon(
                     Icons.person,
-                    color: Colors.white,
+                    color: AppColors.fondo,
                     size: 40,
                   ),
                 ),
@@ -127,7 +127,7 @@ class _AjustesState extends State<Ajustes> {
               onPressed: _cerrarSesion,
               style: ElevatedButton.styleFrom(
                 elevation: 4,
-                backgroundColor: Colors.red,
+                  backgroundColor: const Color.fromARGB(255, 245, 0, 0).withOpacity(0.46),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),

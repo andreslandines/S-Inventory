@@ -63,15 +63,15 @@ class _PerfilState extends State<Perfil> {
             const SizedBox(height: 15),
 
             const CircleAvatar(
-              radius: 60,
+              radius: 50,
               backgroundColor: Colors.white,
               child: CircleAvatar(
                 radius: 56,
                 backgroundColor: Colors.white12,
                 child: Icon(
                   Icons.person_rounded,
-                  size: 65,
-                  color: Colors.white,
+                  size: 40,
+                  color: Color(0xFF0E2136),
                 ),
               ),
             ),

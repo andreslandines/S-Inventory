@@ -12,19 +12,22 @@ void mostrarPerfil({
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        backgroundColor: AppColors.fondo,
-        shape: RoundedRectangleBorder(
+         backgroundColor: AppColors.fondo.withOpacity(0.60),
+          shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+              color: Colors.white.withOpacity(0.18),            width: 2,
+          ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const CircleAvatar(
               radius: 35,
-              backgroundColor: Colors.white12,
+              backgroundColor: Colors.white,
               child: Icon(
                 Icons.person_rounded,
-                color: Colors.white,
+                color: AppColors.fondo,
                 size: 38,
               ),
             ),
@@ -70,8 +73,8 @@ void mostrarPerfil({
                 icon: const Icon(Icons.person_rounded,),
                 label: const Text('Perfil'),
                  style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.fondo,
+                  backgroundColor:Colors.white.withOpacity(0.08),
+                  foregroundColor: Colors.white,
                 ),
               ),
               ),
@@ -89,8 +92,8 @@ void mostrarPerfil({
                 icon: const Icon(Icons.logout_rounded),
                 label: const Text('Cerrar sesión'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.fondo,
+                  backgroundColor: const Color.fromARGB(255, 245, 0, 0).withOpacity(0.46),
+                  foregroundColor: Colors.white,
                 ),
               ),
             ),

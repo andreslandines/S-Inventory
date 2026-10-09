@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/pages/home.dart';
-import 'package:s_inventory/pages/home1.dart';
-import 'package:s_inventory/pages/splashcreen.dart';
 
 void main() {
   runApp(const MainApp());

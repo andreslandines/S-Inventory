@@ -118,7 +118,7 @@ class _OpcionConToggle1State extends State<OpcionConToggle1> {
           style: TextStyle(color: Colors.white, fontSize: 15),
         ),
         value: _activado,
-        activeTrackColor: AppColors.primary,
+        activeTrackColor: AppColors.fondo,
         activeThumbColor: Colors.white,
         onChanged: (valor) {
           setState(() {
@@ -156,7 +156,7 @@ class _OpcionConToggle2State extends State<OpcionConToggle2> {
           style: TextStyle(color: Colors.white, fontSize: 15),
         ),
         value: _activado,
-        activeTrackColor: AppColors.primary,
+        activeTrackColor: AppColors.fondo,
         activeThumbColor: Colors.white,
         onChanged: (valor) {
           setState(() {
