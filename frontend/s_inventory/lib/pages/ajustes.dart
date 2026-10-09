@@ -97,8 +97,8 @@ class _AjustesState extends State<Ajustes> {
               style: TextStyle(color: Colors.grey, fontSize: 17, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const OpcionConToggle1(),
-            const OpcionConToggle2(),
+            OpcionConToggle1(),
+            OpcionConToggle2(),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
