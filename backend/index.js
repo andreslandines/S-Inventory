@@ -39,7 +39,7 @@ app.use('/pro', productosRoutes);
 app.use('/ventas', ventasRoutes);
 app.use('/vencimientos', vencimientosRoutes);
 app.use('/notificaciones', notificacionesRoutes);
-app.use('/api/boxia', chatbotRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 app.use("/reportes", reportesRoutes);
 
 console.log('BREVO_API_KEY existe:', !!process.env.BREVO_API_KEY);
