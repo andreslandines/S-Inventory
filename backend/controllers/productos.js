@@ -34,29 +34,64 @@ export const obtenerPorCat = async (req, res) => {
 
 };
 
+
 export const crear = async (req, res) => {
   try {
-    const { nombre, descripcion, precio, categoria, stock  } = req.body;
+    const { nombre, descripcion, precio, categoria, stock, imagen_url } =
+      req.body;
 
-    //Cloudinary almacena la URL segura en req.file.path
-    const imagen = req.file ? req.file.path : null;
+    const imagen = req.file?.path || imagen_url;
 
-    if (!nombre || !precio || !imagen) {
-      return res.status(400).json({ error: 'nombre, precio e imagen requeridos' });
+    if (!nombre?.trim() || !precio || !imagen) {
+      return res.status(400).json({
+        error: 'nombre, precio e imagen requeridos',
+      });
+    }
+
+    // Las URL externas deben ser HTTPS y de Cloudinary.
+    if (!req.file) {
+      let url;
+
+      try {
+        url = new URL(imagen);
+      } catch {
+        return res.status(400).json({
+          error: 'La URL de imagen no es válida',
+        });
+      }
+
+      if (
+        url.protocol !== 'https:' ||
+        url.hostname !== 'res.cloudinary.com'
+      ) {
+        return res.status(400).json({
+          error: 'Usa una URL HTTPS de Cloudinary',
+        });
+      }
     }
 
     const { data, error } = await crearproductos({
-      nombre, descripcion, precio, categoria, stock, imagen
+      nombre: nombre.trim(),
+      descripcion,
+      precio,
+      categoria,
+      stock: stock ?? 0,
+      imagen,
     });
 
-    if (error) return res.status(500).json({ error: 'Error al crear' });
-    return res.status(201).json({ message: 'Creado', producto: data[0] });
-  } catch (error) {
+    if (error) {
+      return res.status(500).json({ error: 'Error al crear producto' });
+    }
 
+    return res.status(201).json({
+      message: 'Creado',
+      producto: data?.[0],
+    });
+  } catch (error) {
     return res.status(500).json({ error: error.message });
-    
   }
 };
+
 
 export const editar = async (req, res) => {
   try {

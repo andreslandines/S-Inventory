@@ -9,6 +9,8 @@ class Home1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  Container(
+      
+      
               width: 100,
               padding: const EdgeInsets.only(top: 5, left: 5, right: 5),
               decoration: BoxDecoration(
@@ -79,9 +81,10 @@ class Home1 extends StatelessWidget {
                   const SizedBox(height: 25),
 
                   const Text(
-                    'Stock',
+                    'Stock ',
                     style: Estilotextos.textoSecundario,
                   ),
+                  
 
                   const SizedBox(height: 10),
 
@@ -196,11 +199,7 @@ class Home1 extends StatelessWidget {
           const SizedBox(width: 15),
           const Text(
             '- Stock crítico',
-            style: TextStyle(
-              color: Colors.orange,
-              fontSize: 11,
-              fontFamily: 'Roboto',
-            ),
+            style: Estilotextos.textoamarillo,
           ),
         ],
       ),
@@ -225,6 +224,7 @@ class Home1 extends StatelessWidget {
           style: Estilotextos.textoPequeno,
         ),
       ],
+      
     );
   }
 }

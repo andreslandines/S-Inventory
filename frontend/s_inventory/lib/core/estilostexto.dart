@@ -57,4 +57,12 @@ class Estilotextos {
     color: Color.fromARGB(255, 47, 126, 216),
     fontSize: 14,
   );
+
+  static const TextStyle textoamarillo = TextStyle(
+    color: Colors.orange,
+    fontSize: 11,
+    fontFamily: 'Roboto',
+  );
+
 }
+
