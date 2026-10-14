@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:s_inventory/models/chat_boxia.dart';
+import '../PanelHistorial.dart';
+
 
 class ChatHeader extends StatelessWidget {
-  const ChatHeader({super.key});
-
+  final Function(ChatBoxia)onAbrir;
+  final VoidCallback onNuevo;
+  
+  const ChatHeader({super.key, required this.onAbrir, required this.onNuevo});
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -12,7 +17,7 @@ class ChatHeader extends StatelessWidget {
           child: Row(
             children: [
               const CircleAvatar(
-                backgroundColor: Color.fromARGB(255, 21, 78, 202),
+                backgroundColor: Color.fromARGB(255, 116, 160, 253),
                 child: Icon(Icons.auto_awesome, color: Colors.white),
               ),
               const SizedBox(width: 12),
@@ -21,7 +26,7 @@ class ChatHeader extends StatelessWidget {
                 children: const [
                   Text(
                     'Asesor S-Inventory',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
                   ),
                   Text(
                     'En linea - Respuestas al instante',
@@ -29,6 +34,19 @@ class ChatHeader extends StatelessWidget {
                   ),
                 ],
               ),
+              Spacer(),
+              IconButton( tooltip: 'Historial',icon: const Icon( Icons.history, color: Color.fromARGB(255, 116, 160, 253),),
+                onPressed: () => showModalBottomSheet(context: context,
+                  backgroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (_) => PanelHistorial(
+                onAbrir: onAbrir,
+                onNuevo: onNuevo,
+                ),
+              ),
+            ),
             ],
           ),
         ),

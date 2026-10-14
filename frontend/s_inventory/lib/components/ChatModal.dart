@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/components/chat/ChatBoxIABurbuja.dart';
 import 'package:s_inventory/components/chat/ChatHeader.dart';
+import 'package:s_inventory/components/ChatBoxiaStorage.dart';
 import 'package:s_inventory/components/chat/ChatInputField.dart';
+import 'package:s_inventory/models/chat_boxia.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/chatboxiaservice.dart';
 
@@ -17,18 +19,22 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late String _sesionId;
-  final List<Map<String, String>> _mensajes = [];
+
+  ChatBoxia _chatActual = ChatBoxia.vacio();
+  List<MensajeBoxia> get _mensajes => _chatActual.mensajes;
+
   bool _cargando = false;
+  bool _inicializado = false;
 
   @override
   void initState() {
     super.initState();
-    _obtenerSesionDelDia();
-     _mensajes.add({
-      'role': 'bot',
-      'text': 'Hola! Soy Boxi, tu asistente de inventario. Puedo ayudarte a buscar productos, revisar stock, detectar vencimientos y generar reportes. ¿En que te puedo ayudar el dia de hoy?',
-      'hora': _formatearHora(),
-    });
+    _inicializar();
+  }
+
+  Future<void> _inicializar() async {
+    await _obtenerSesionDelDia();
+    await _cargarActivo();
   }
 
   Future<void> _obtenerSesionDelDia() async {
@@ -37,13 +43,125 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
     final sesionGuardada = prefs.getString('sesion_boxia');
 
     if (sesionGuardada != null && sesionGuardada.startsWith('sesion_$hoy')) {
-
-
       _sesionId = sesionGuardada;
-
     } else {
       _sesionId = 'sesion_$hoy';
       await prefs.setString('sesion_boxia', _sesionId);
+    }
+  }
+
+  Future<void> _cargarActivo() async {
+    if (!mounted) return;
+
+    // 1) Recupera el chat guardado de SharedPreferences
+    final guardado = await ChatBoxiaStorage.leerActivo();
+    if (!mounted) return;
+
+    setState(() {
+      if (guardado != null && guardado.mensajes.isNotEmpty) {
+        _chatActual = guardado;
+      } else {
+        _chatActual = ChatBoxia.vacio();
+        _chatActual.mensajes.add(MensajeBoxia(
+          rol: 'bot',
+          texto: 'Hola! Soy Boxi, tu asistente de inventario. Puedo ayudarte a buscar productos, revisar stock, detectar vencimientos y generar reportes. ¿En que te puedo ayudar el dia de hoy?',
+          hora: _formatearHora(),
+        ));
+      }
+      _inicializado = true;
+    });
+
+    // 2) Recupera lo que el usuario tenía escrito (sin enviar)
+    final prefs = await SharedPreferences.getInstance();
+    final borrador = prefs.getString('chat_boxia_borrador');
+    if (borrador != null && mounted) {
+      _controller.text = borrador;
+    }
+
+    _scrollHaciaAbajo();
+  }
+
+  void _nuevoChat() {
+    setState(() {
+      _chatActual = ChatBoxia.vacio();
+      _chatActual.mensajes.add(MensajeBoxia(
+        rol: 'bot',
+        texto: 'Hola! Soy Boxi, tu asistente de inventario. Puedo ayudarte a buscar productos, revisar stock, detectar vencimientos y generar reportes. ¿En que te puedo ayudar el dia de hoy?',
+        hora: _formatearHora(),
+      ));
+    });
+    _persistir();
+    _guardarBorrador(''); // limpia el texto al pulsar Nuevo
+  }
+
+  void _abrirChat(ChatBoxia chat) {
+    setState(() {
+      _chatActual = chat;
+    });
+    _persistir();
+    _scrollHaciaAbajo();
+  }
+
+  Future<void> _persistir() async {
+    await ChatBoxiaStorage.guardar(_chatActual);
+    await ChatBoxiaStorage.setActivo(_chatActual.id);
+  }
+
+  void _guardarBorrador(String texto) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('chat_boxia_borrador', texto);
+  }
+
+  void _enviarMensaje() async {
+    final texto = _controller.text.trim();
+    if (texto.isEmpty || _cargando) return;
+
+    _controller.clear();
+    _guardarBorrador(''); // al enviar, el borrador ya no aplica
+
+    setState(() {
+      _chatActual.mensajes.add(MensajeBoxia(
+        rol: 'user',
+        texto: texto,
+        hora: _formatearHora(),
+      ));
+      _cargando = true;
+    });
+    _persistir();
+
+    _scrollHaciaAbajo();
+
+    try {
+      final respuesta = await ChatBoxIAService.enviarMensaje(
+        texto,
+        sesionId: _sesionId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _chatActual.mensajes.add(MensajeBoxia(
+            rol: 'bot',
+            texto: respuesta,
+            hora: _formatearHora(),
+          ));
+          _cargando = false;
+        });
+        _persistir();
+        _scrollHaciaAbajo();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _chatActual.mensajes.add(MensajeBoxia(
+            rol: 'bot',
+            texto: 'Lo siento, no pude conectarme. Intenta de nuevo.',
+            hora: _formatearHora(),
+          ));
+          _cargando = false;
+        });
+        _persistir();
+        _scrollHaciaAbajo();
+      }
     }
   }
 
@@ -61,54 +179,6 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
     return '$hora:$minuto';
   }
 
-  void _enviarMensaje() async {
-    final texto = _controller.text.trim();
-    if (texto.isEmpty || _cargando) return;
-
-    _controller.clear();
-    setState(() {
-      _mensajes.add({
-        'role': 'user',
-        'text': texto,
-        'hora': _formatearHora(),
-      });
-      _cargando = true;
-    });
-
-    _scrollHaciaAbajo();
-
-    try {
-      final respuesta = await ChatBoxIAService.enviarMensaje(
-        texto,
-        sesionId: _sesionId,
-      );
-
-      if (mounted) {
-        setState(() {
-          _mensajes.add({
-            'role': 'bot',
-            'text': respuesta,
-            'hora': _formatearHora(),
-          });
-          _cargando = false;
-        });
-        _scrollHaciaAbajo();
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _mensajes.add({
-            'role': 'bot',
-            'text': 'Lo siento, no pude conectarme. Intenta de nuevo.',
-            'hora': _formatearHora(),
-          });
-          _cargando = false;
-        });
-        _scrollHaciaAbajo();
-      }
-    }
-  }
-
   void _scrollHaciaAbajo() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -123,6 +193,8 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
 
   @override
   void dispose() {
+    // Al salir de la pantalla, guarda el texto sin enviar
+    _guardarBorrador(_controller.text);
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -132,6 +204,10 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
+    if (!_inicializado) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Container(
       height: widget.pantallaCompleta
           ? MediaQuery.of(context).size.height
@@ -139,7 +215,10 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
       margin: EdgeInsets.only(bottom: bottomInset),
       child: Column(
         children: [
-          const ChatHeader(),
+          ChatHeader(
+            onAbrir: _abrirChat,
+            onNuevo: _nuevoChat,
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -161,9 +240,9 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
                     );
                   },
                   child: ChatBurbuja(
-                    texto: item['text']!,
-                    esUsuario: item['role'] == 'user',
-                    hora: item['hora'],
+                    texto: item.texto,
+                    esUsuario: item.rol == 'user',
+                    hora: item.hora,
                   ),
                 );
               },
@@ -176,11 +255,17 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
                 children: [
                   SizedBox(
                     width: 14,
-                    height:  14,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Color.fromARGB(255,  21,  78, 202)),
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color.fromARGB(255, 21, 78, 202),
+                    ),
                   ),
                   SizedBox(width: 8),
-                  Text('El asesor esta respondiendo...', style: TextStyle(color: Colors.black45, fontSize: 12)),
+                  Text(
+                    'El asesor esta respondiendo...',
+                    style: TextStyle(color: Colors.black45, fontSize: 12),
+                  ),
                 ],
               ),
             ),

@@ -15,18 +15,18 @@ class _BoxiaState extends State<Boxia> {
     return Container(
       margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
       decoration: BoxDecoration(
-        color: AppColors.fondoComponentes,
-        borderRadius: BorderRadius.circular(5),
+        color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.white12, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.white.withOpacity(0.02),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: const ChatBoxiaModal(),
+      child: ChatBoxiaModal(),
     );
   }
 }

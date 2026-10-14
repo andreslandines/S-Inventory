@@ -42,7 +42,7 @@ class ChatInputField extends StatelessWidget {
           IconButton(
             onPressed: cargando ? null : onEnviar,
             style: IconButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 21, 78, 202),
+              backgroundColor: Color.fromARGB(255, 116, 160, 253),
               foregroundColor: Colors.white,
               shape: const CircleBorder(),
             ),
