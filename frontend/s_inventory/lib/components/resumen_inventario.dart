@@ -75,14 +75,18 @@ class ResumenInventario extends StatelessWidget {
     Color color,
   ) {
     return Container(
-      height: 100,
-      padding: const EdgeInsets.all(12),
+     margin: const EdgeInsets.only(left: 3, right: 3, bottom: 3),
       decoration: BoxDecoration(
-        color: AppColors.fondoComponentes,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.07),
-        ),
+                color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white12, width: 1),
+        boxShadow: [
+          BoxShadow(
+                  color: Colors.white.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0,20),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,8 +94,8 @@ class ResumenInventario extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icono, color: color, size: 19),
-              const SizedBox(width: 6),
+              Icon(icono, color: color, size: 24),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   titulo,

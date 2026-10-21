@@ -95,73 +95,90 @@ class _InventarioState extends State<Inventario> {
         _stock(p) > 0 && _stock(p) <= 5).length;
     final agotados = _productos.where((p) => _stock(p) <= 0).length;
 
-    return Scaffold(
-      backgroundColor: AppColors.fondo,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _guardando ? null : _agregarProducto,
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.fondo,
-        icon: const Icon(Icons.add),
-        label: Text(_guardando ? 'Guardando...' : 'Agregar producto'),
+    return Container(
+      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white12, width: 1),
+        boxShadow: [
+          BoxShadow(
+                  color: Colors.white.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0,20),
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _cargarProductos,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text('Inventario', style: Estilotextos.Titulos),
-              const SizedBox(height: 6),
-              Text(
-                'Administra los productos de tu negocio.',
-                style: Estilotextos.textoSecundario,
-              ),
-              const SizedBox(height: 20),
-
-              if (_cargando)
-                const Center(child: CircularProgressIndicator())
-              else if (_error != null)
-                Column(
-                  children: [
-                    Text(_error!, style: Estilotextos.textoNormal),
-                    TextButton(
-                      onPressed: _cargarProductos,
-                      child: const Text('Reintentar'),
-                    ),
-                  ],
-                )
-              else ...[
-                ResumenInventario(
-                  totalProductos: _productos.length,
-                  unidades: _unidades,
-                  stockBajo: stockBajo,
-                  agotados: agotados,
+      child: Scaffold(
+      
+        
+        backgroundColor: AppColors.fondo,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _guardando ? null : _agregarProducto,
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.fondo,
+          icon: const Icon(Icons.add),
+          label: Text(_guardando ? 'Guardando...' : 'Agregar producto'),
+        ),
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _cargarProductos,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text('Inventario', style: Estilotextos.Titulos),
+                const SizedBox(height: 6),
+                Text(
+                  'Administra los productos de tu negocio.',
+                  style: Estilotextos.textoSecundario,
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  'Productos registrados (${_productos.length})',
-                  style: Estilotextos.subtitulos,
-                ),
-                const SizedBox(height: 12),
-                if (_productos.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        'No hay productos registrados.',
-                        style: TextStyle(color: Colors.white70),
+      
+                if (_cargando)
+                  const Center(child: CircularProgressIndicator())
+                else if (_error != null)
+                  Column(
+                    children: [
+                      Text(_error!, style: Estilotextos.textoNormal),
+                      TextButton(
+                        onPressed: _cargarProductos,
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  )
+                else ...[
+                  ResumenInventario(
+                    totalProductos: _productos.length,
+                    unidades: _unidades,
+                    stockBajo: stockBajo,
+                    agotados: agotados,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Productos registrados (${_productos.length})',
+                    style: Estilotextos.subtitulos,
+                  ),
+                  const SizedBox(height: 22),
+                  if (_productos.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'No hay productos registrados.',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    )
+                  else
+                    ..._productos.map(
+                      (p) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: TarjetaProductoInventario(producto: p),
                       ),
                     ),
-                  )
-                else
-                  ..._productos.map(
-                    (p) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: TarjetaProductoInventario(producto: p),
-                    ),
-                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
