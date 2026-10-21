@@ -29,7 +29,7 @@ class ChatBurbuja extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: esUsuario ? Color.fromARGB(255, 116, 160, 253) : const Color(0xFFF1F3F4),
+                color: esUsuario ? Color.fromARGB(255, 24, 74, 150) : const Color(0xFFF1F3F4),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -52,7 +52,7 @@ class ChatBurbuja extends StatelessWidget {
               child: Text(
                 horaMostrar,
                 style: TextStyle(
-                  color: Colors.black38,
+                  color: const Color.fromARGB(255, 255, 254, 254),
                   fontSize: 11,
                 ),
               ),

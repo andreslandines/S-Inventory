@@ -23,7 +23,7 @@ class ChatInputField extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black12),
+                border: Border.all(color: const Color.fromARGB(31, 112, 26, 26)),
               ),
               child: TextField(
                 controller: controller,
@@ -42,7 +42,7 @@ class ChatInputField extends StatelessWidget {
           IconButton(
             onPressed: cargando ? null : onEnviar,
             style: IconButton.styleFrom(
-              backgroundColor: Color.fromARGB(255, 116, 160, 253),
+              backgroundColor: Color.fromARGB(255, 24, 74, 150),
               foregroundColor: Colors.white,
               shape: const CircleBorder(),
             ),

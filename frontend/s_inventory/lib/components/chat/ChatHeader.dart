@@ -17,7 +17,7 @@ class ChatHeader extends StatelessWidget {
           child: Row(
             children: [
               const CircleAvatar(
-                backgroundColor: Color.fromARGB(255, 116, 160, 253),
+                backgroundColor: Color.fromARGB(255, 24, 74, 150),
                 child: Icon(Icons.auto_awesome, color: Colors.white),
               ),
               const SizedBox(width: 12),
@@ -35,7 +35,7 @@ class ChatHeader extends StatelessWidget {
                 ],
               ),
               Spacer(),
-              IconButton( tooltip: 'Historial',icon: const Icon( Icons.history, color: Color.fromARGB(255, 116, 160, 253),),
+              IconButton( tooltip: 'Historial',icon: const Icon( Icons.history, color: Color.fromARGB(255, 49, 141, 228),),
                 onPressed: () => showModalBottomSheet(context: context,
                   backgroundColor: Colors.white,
                   shape: const RoundedRectangleBorder(

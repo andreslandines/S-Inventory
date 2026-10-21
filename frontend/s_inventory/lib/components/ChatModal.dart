@@ -258,13 +258,12 @@ class _ChatBoxiaModalState extends State<ChatBoxiaModal> {
                     height: 14,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Color.fromARGB(255, 21, 78, 202),
+                      color: Color.fromARGB(255, 58, 137, 255)),
                     ),
-                  ),
                   SizedBox(width: 8),
                   Text(
                     'El asesor esta respondiendo...',
-                    style: TextStyle(color: Colors.black45, fontSize: 12),
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                 ],
               ),
