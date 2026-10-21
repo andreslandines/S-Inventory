@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:s_inventory/pages/notificaciones.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:s_inventory/components/app_bar_home.dart';
@@ -81,6 +82,15 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  void _mostrarNotificaciones() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const NotificacionesPage(),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,11 +98,12 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBarHome(
         nombre: _nombre,
         onPerfil: _mostrarPerfil,
+        onNotificaciones: _mostrarNotificaciones,
       ),
       body: TabBarView(
         controller: _tabController,
         children: const [
-          Home1(),
+          Home1Screen(),
           Inventario(),
           Boxia(),
           Reportes(),

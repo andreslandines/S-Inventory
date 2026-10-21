@@ -41,6 +41,22 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        await navigator.serviceWorker.register(
+          '/firebase-messaging-sw.js'
+        );
+        console.log('Service Worker de Firebase registrado');
+      } catch (error) {
+        console.error(
+          'Error al registrar el Service Worker:',
+          error
+        );
+      }
+    });
+  }
+</script>
 </body>
 </html>
