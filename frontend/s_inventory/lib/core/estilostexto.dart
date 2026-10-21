@@ -1,68 +1,84 @@
+
 import 'package:flutter/material.dart';
+import 'colores.dart';
 
 class Estilotextos {
-  static const TextStyle estilosletras = TextStyle(
-    color: Colors.white,
-    fontSize: 18,
-    fontFamily: 'Roboto',
-  );
+  Estilotextos._();
 
+  static const String fuente = 'Roboto';
+
+  // Jerarquía de títulos
   static const TextStyle Titulos = TextStyle(
-    color: Colors.white,
-    fontSize: 30,
-    fontWeight: FontWeight.bold,
-    fontFamily: 'Roboto',
+    color: AppColors.textoPrincipal,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    fontFamily: fuente,
   );
 
   static const TextStyle subtitulos = TextStyle(
-    color: Colors.white,
+    color: AppColors.textoPrincipal,
     fontSize: 20,
     fontWeight: FontWeight.w600,
-    fontFamily: 'Roboto',
+    fontFamily: fuente,
+  );
+
+  static const TextStyle tituloSeccion = TextStyle(
+    color: AppColors.textoPrincipal,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    fontFamily: fuente,
+  );
+
+  // Textos generales
+  static const TextStyle estilosletras = TextStyle(
+    color: AppColors.textoPrincipal,
+    fontSize: 18,
+    fontFamily: fuente,
   );
 
   static const TextStyle textoNormal = TextStyle(
-    color: Colors.white,
+    color: AppColors.textoPrincipal,
     fontSize: 16,
-    fontFamily: 'Roboto',
+    fontFamily: fuente,
   );
 
   static const TextStyle textoSecundario = TextStyle(
-    color: Color(0xFF8C9CAD),
+    color: AppColors.textoSecundario,
     fontSize: 13,
-    fontFamily: 'Roboto',
+    fontFamily: fuente,
   );
 
   static const TextStyle textoPequeno = TextStyle(
-    color: Color(0xFF8C9CAD),
-    fontSize: 11,
-    fontFamily: 'Roboto',
+    color: AppColors.textoSecundario,
+    fontSize: 12,
+    fontFamily: fuente,
   );
 
+  // Botones y formularios
   static const TextStyle textoBoton = TextStyle(
-    color: Colors.white,
+    color: AppColors.textoPrincipal,
     fontSize: 14,
     fontWeight: FontWeight.w600,
-    fontFamily: 'Roboto',
+    fontFamily: fuente,
   );
 
   static const TextStyle label = TextStyle(
-    color: Colors.white,
+    color: AppColors.textoPrincipal,
     fontSize: 14,
-    fontWeight: FontWeight.w200,
-    fontFamily: 'Roboto',
+    fontWeight: FontWeight.w400,
+    fontFamily: fuente,
   );
 
-  static const TextStyle textoOlvidasteContrasena = TextStyle(
-    color: Color.fromARGB(255, 47, 126, 216),
+  static const TextStyle textoOlvidasteContrasena =
+      TextStyle(
+    color: AppColors.secondary,
     fontSize: 14,
+    fontFamily: fuente,
   );
 
   static const TextStyle textoamarillo = TextStyle(
-    color: Colors.orange,
-    fontSize: 11,
-    fontFamily: 'Roboto',
+    color: AppColors.advertencia,
+    fontSize: 12,
+    fontFamily: fuente,
   );
-
 }
-

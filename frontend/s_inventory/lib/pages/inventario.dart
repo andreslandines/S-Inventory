@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:s_inventory/components/buscador_productos.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/services/producto_service.dart';
@@ -133,7 +134,9 @@ class _InventarioState extends State<Inventario> {
                   style: Estilotextos.textoSecundario,
                 ),
                 const SizedBox(height: 20),
-      
+                const BuscadorProductos(),
+                const SizedBox(height: 20),
+
                 if (_cargando)
                   const Center(child: CircularProgressIndicator())
                 else if (_error != null)

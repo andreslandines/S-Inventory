@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -14,21 +15,21 @@ class ProductoService {
       headers: ApiConfig.headers,
     );
 
-    if (respuesta.statusCode == 200) {
-      final dynamic datos = jsonDecode(respuesta.body);
-
-      if (datos is! List) {
-        throw Exception('La respuesta de productos no es una lista');
-      }
-
-      return datos.map<Map<String, dynamic>>((producto) {
-        return Map<String, dynamic>.from(producto);
-      }).toList();
+    if (respuesta.statusCode != 200) {
+      throw Exception(
+        'Error al consultar productos: ${respuesta.statusCode}',
+      );
     }
 
-    throw Exception(
-      'Error al consultar productos: ${respuesta.statusCode}',
-    );
+    final dynamic datos = jsonDecode(respuesta.body);
+
+    if (datos is! List) {
+      throw Exception('La respuesta de productos no es una lista.');
+    }
+
+    return datos.map<Map<String, dynamic>>((producto) {
+      return Map<String, dynamic>.from(producto);
+    }).toList();
   }
 
   Future<Map<String, dynamic>> crearProducto({
@@ -37,8 +38,9 @@ class ProductoService {
     required String precio,
     required String categoria,
     required String stock,
-    required List<int> imagenBytes,
-    required String nombreImagen,
+    List<int>? imagenBytes,
+    String? nombreImagen,
+    String? imagenUrl,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
@@ -68,13 +70,23 @@ class ProductoService {
       'stock': stock.trim(),
     });
 
-    solicitud.files.add(
-      http.MultipartFile.fromBytes(
-        'imagen',
-        imagenBytes,
-        filename: nombreImagen,
-      ),
-    );
+    final urlImagen = imagenUrl?.trim() ?? '';
+
+    if (imagenBytes != null && imagenBytes.isNotEmpty) {
+      solicitud.files.add(
+        http.MultipartFile.fromBytes(
+          'imagen',
+          imagenBytes,
+          filename: nombreImagen ?? 'producto.jpg',
+        ),
+      );
+    } else if (urlImagen.isNotEmpty) {
+      solicitud.fields['imagenUrl'] = urlImagen;
+    } else {
+      throw Exception(
+        'Selecciona una imagen o proporciona una URL válida.',
+      );
+    }
 
     final respuesta = await solicitud.send();
     final cuerpo = await respuesta.stream.bytesToString();
@@ -84,6 +96,7 @@ class ProductoService {
     if (cuerpo.isNotEmpty) {
       try {
         final decoded = jsonDecode(cuerpo);
+
         if (decoded is Map<String, dynamic>) {
           datos = decoded;
         }
@@ -94,7 +107,8 @@ class ProductoService {
       }
     }
 
-    if (respuesta.statusCode == 201) {
+    if (respuesta.statusCode == 200 ||
+        respuesta.statusCode == 201) {
       return datos;
     }
 

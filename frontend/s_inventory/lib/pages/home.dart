@@ -7,7 +7,6 @@ import 'package:s_inventory/components/perfil_dialog.dart';
 import 'package:s_inventory/components/login.dart';
 
 import 'package:s_inventory/core/colores.dart';
-
 import 'package:s_inventory/pages/home1.dart';
 import 'package:s_inventory/pages/inventario.dart';
 import 'package:s_inventory/pages/boxia.dart';
@@ -89,16 +88,21 @@ class _HomeScreenState extends State<HomeScreen>
         nombre: _nombre,
         onPerfil: _mostrarPerfil,
       ),
+     
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          Home1(),
-          Inventario(),
-          Boxia(),
-          Reportes(),
-          Ajustes(),
+        children: [
+          Home1(
+            onInventario: () => _tabController.animateTo(1),
+            onReportes: () => _tabController.animateTo(3),
+          ),
+          const Inventario(),
+          const Boxia(),
+          const Reportes(),
+          const Ajustes(),
         ],
       ),
+
       bottomNavigationBar: BottomNavigation(
         controller: _tabController,
       ),
