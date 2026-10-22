@@ -98,8 +98,9 @@ class _PanelHistorialState extends State<PanelHistorial> {
                       Navigator.pop(context);
                       widget.onNuevo();
                     },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Nuevo chat'),
+                    icon: Icon(Icons.add, size: 18),
+                    label: Text('Nuevo chat'),
+                    style: FilledButton.styleFrom(backgroundColor: Color.fromARGB(255, 24, 74, 150)),
                   ),
                 ],
               ),

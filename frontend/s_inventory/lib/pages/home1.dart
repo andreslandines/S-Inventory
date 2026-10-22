@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/components/buscador_productos.dart';
@@ -62,13 +61,9 @@ class Home1 extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-         AccesosRapidos(
-            onVenta: () {
-              // Abrir la pantalla de registrar venta.
-            },
-            onAgregarProducto: () {
-              // Abrir el formulario para agregar un producto.
-            },
+          AccesosRapidos(
+            onVenta: () => _abrirVenta(context),
+            onAgregarProducto: onInventario,
           ),
           const SizedBox(height: 24),
           Container(

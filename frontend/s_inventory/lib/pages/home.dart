@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -5,13 +6,14 @@ import 'package:s_inventory/components/app_bar_home.dart';
 import 'package:s_inventory/components/bottom_navigation.dart';
 import 'package:s_inventory/components/perfil_dialog.dart';
 import 'package:s_inventory/components/login.dart';
-
 import 'package:s_inventory/core/colores.dart';
+
 import 'package:s_inventory/pages/home1.dart';
 import 'package:s_inventory/pages/inventario.dart';
 import 'package:s_inventory/pages/boxia.dart';
 import 'package:s_inventory/pages/reportes.dart';
 import 'package:s_inventory/pages/ajustes.dart';
+import 'package:s_inventory/pages/notificaciones.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,11 +33,7 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
 
-    _tabController = TabController(
-      length: 5,
-      vsync: this,
-    );
-
+    _tabController = TabController(length: 5, vsync: this);
     _cargarUsuario();
   }
 
@@ -58,15 +56,12 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _cerrarSesion() async {
     final prefs = await SharedPreferences.getInstance();
-
     await prefs.clear();
 
     if (!mounted) return;
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
   }
@@ -80,6 +75,15 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  void _mostrarNotificaciones() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const NotificacionesPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,8 +91,8 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBarHome(
         nombre: _nombre,
         onPerfil: _mostrarPerfil,
+        onNotificaciones: _mostrarNotificaciones,
       ),
-     
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -102,7 +106,6 @@ class _HomeScreenState extends State<HomeScreen>
           const Ajustes(),
         ],
       ),
-
       bottomNavigationBar: BottomNavigation(
         controller: _tabController,
       ),
