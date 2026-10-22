@@ -119,4 +119,110 @@ class ProductoService {
 
     throw Exception(mensaje.toString());
   }
+
+  
+  Future<void> actualizarProducto({
+    required String id,
+    required String nombre,
+    required String descripcion,
+    required String precio,
+    required String categoria,
+    required String stock,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Inicia sesión nuevamente.');
+    }
+
+    final url = Uri.parse(
+      '${ApiConfig.baseUrl}/pro/productoseditar/$id',
+    );
+
+    final respuesta = await http.put(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'nombre': nombre.trim(),
+        'descripcion': descripcion.trim(),
+        'precio': double.parse(precio.replaceAll(',', '.')),
+        'categoria': categoria.trim(),
+        'stock': int.parse(stock),
+      }),
+    );
+
+    if (respuesta.statusCode != 200) {
+      String mensaje = 'No se pudo actualizar el producto.';
+
+      try {
+        final datos = jsonDecode(respuesta.body);
+        if (datos is Map) {
+          mensaje = datos['error']?.toString() ?? mensaje;
+        }
+      } catch (_) {}
+
+      throw Exception(mensaje);
+    }
+  }
+
+  
+Future<void> eliminarProducto(String id) async {
+  final idProducto = id.trim();
+
+  if (idProducto.isEmpty || idProducto == 'null') {
+    throw Exception('El identificador del producto no es válido.');
+  }
+
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('jwt_token');
+
+  if (token == null || token.isEmpty) {
+    throw Exception('Inicia sesión nuevamente.');
+  }
+
+  final url = Uri.parse(
+    '${ApiConfig.baseUrl}/pro/productoseliminar/$idProducto',
+  );
+
+  final respuesta = await http.delete(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  if (respuesta.statusCode == 200 ||
+      respuesta.statusCode == 204) {
+    return;
+  }
+
+  String detalle = respuesta.body.trim();
+
+  if (detalle.isNotEmpty) {
+    try {
+      final datos = jsonDecode(detalle);
+
+      if (datos is Map) {
+        detalle = datos['error']?.toString() ??
+            datos['message']?.toString() ??
+            detalle;
+      }
+    } catch (_) {
+      // Conserva el cuerpo original si no es JSON.
+    }
+  }
+
+  throw Exception(
+    'Error al eliminar producto '
+    '(HTTP ${respuesta.statusCode}): $detalle',
+  );
+}
+
+
 }

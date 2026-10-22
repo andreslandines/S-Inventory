@@ -5,22 +5,22 @@ import 'package:s_inventory/core/estilostexto.dart';
 
 class TarjetaProductoInventario extends StatelessWidget {
   final Map<String, dynamic> producto;
+  final VoidCallback onEditar;
+  final VoidCallback onEliminar;
 
   const TarjetaProductoInventario({
     super.key,
     required this.producto,
+    required this.onEditar,
+    required this.onEliminar,
   });
 
   @override
   Widget build(BuildContext context) {
-    final nombre =
-        producto['nombre']?.toString() ?? 'Sin nombre';
-
+    final nombre = producto['nombre']?.toString() ?? 'Sin nombre';
     final categoriaCompleta =
         producto['categoria']?.toString() ?? '';
-
     final partesCategoria = categoriaCompleta.split(' - ');
-
     final categoria = partesCategoria.first.trim();
 
     final tipoProducto = partesCategoria.length > 1
@@ -28,20 +28,17 @@ class TarjetaProductoInventario extends StatelessWidget {
         : '';
 
     final imagen = producto['imagen']?.toString() ?? '';
-
-    final stock =
-        int.tryParse('${producto['stock'] ?? 0}') ?? 0;
-
+    final stock = int.tryParse('${producto['stock'] ?? 0}') ?? 0;
     final precio =
         double.tryParse('${producto['precio'] ?? 0}') ?? 0;
 
-    final Color colorEstado = stock <= 0
+    final colorEstado = stock <= 0
         ? const Color(0xFFFF7777)
         : stock <= 5
             ? AppColors.accent
             : const Color(0xFF69D5A5);
 
-    final String estado = stock <= 0
+    final estado = stock <= 0
         ? 'Agotado'
         : stock <= 5
             ? 'Stock bajo'
@@ -69,8 +66,7 @@ class TarjetaProductoInventario extends StatelessWidget {
                     width: 65,
                     height: 65,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _imagenVacia(),
+                    errorBuilder: (_, __, ___) => _imagenVacia(),
                   ),
           ),
           const SizedBox(width: 12),
@@ -86,7 +82,6 @@ class TarjetaProductoInventario extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 if (categoria.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -98,16 +93,12 @@ class TarjetaProductoInventario extends StatelessWidget {
                     style: Estilotextos.textoSecundario,
                   ),
                 ],
-
                 const SizedBox(height: 7),
-
                 Text(
                   'Precio: \$${precio.toStringAsFixed(0)}',
                   style: Estilotextos.textoSecundario,
                 ),
-
                 const SizedBox(height: 6),
-
                 Wrap(
                   spacing: 7,
                   runSpacing: 5,
@@ -139,6 +130,31 @@ class TarjetaProductoInventario extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: 4),
+          Column(
+            children: [
+              IconButton(
+                tooltip: 'Editar producto',
+                onPressed: onEditar,
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: AppColors.accent,
+                  size: 22,
+                ),
+              ),
+              IconButton(
+                tooltip: 'Eliminar producto',
+                onPressed: onEliminar,
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFFFF7777),
+                  size: 22,
+                ),
+              ),
+            ],
           ),
         ],
       ),

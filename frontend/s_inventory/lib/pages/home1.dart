@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/components/buscador_productos.dart';
@@ -6,12 +7,12 @@ import 'package:s_inventory/components/inicio/accesos_rapidos.dart';
 import 'package:s_inventory/pages/registrar_ventas.dart';
 
 class Home1 extends StatelessWidget {
-  final VoidCallback onInventario;
+  final VoidCallback onAgregarProducto;
   final VoidCallback onReportes;
 
   const Home1({
     super.key,
-    required this.onInventario,
+    required this.onAgregarProducto,
     required this.onReportes,
   });
 
@@ -63,7 +64,7 @@ class Home1 extends StatelessWidget {
           const SizedBox(height: 14),
           AccesosRapidos(
             onVenta: () => _abrirVenta(context),
-            onAgregarProducto: onInventario,
+            onAgregarProducto: onAgregarProducto,
           ),
           const SizedBox(height: 24),
           Container(
