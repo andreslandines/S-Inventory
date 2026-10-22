@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/core/colores.dart';
@@ -29,10 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
     OutlineInputBorder borde(Color color, double ancho) {
       return OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: color,
-          width: ancho,
-        ),
+        borderSide: BorderSide(color: color, width: ancho),
       );
     }
 
@@ -44,14 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
         keyboardType: contrasena
             ? TextInputType.text
             : TextInputType.emailAddress,
-        style: const TextStyle(
-          color: Colors.white,
-        ),
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(
-            color: Colors.white70,
-          ),
+          labelStyle: const TextStyle(color: Colors.white70),
           floatingLabelStyle: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w500,
@@ -62,14 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
             horizontal: 15,
             vertical: 16,
           ),
-          enabledBorder: borde(
-            Colors.white24,
-            1,
-          ),
-          focusedBorder: borde(
-            Colors.white,
-            1.5,
-          ),
+          enabledBorder: borde(Colors.white24, 1),
+          focusedBorder: borde(Colors.white, 1.5),
           suffixIcon: contrasena
               ? IconButton(
                   icon: Icon(
@@ -117,50 +105,63 @@ class _LoginScreenState extends State<LoginScreen> {
         contrasena,
       );
 
+      final usuario = respuesta['usuario'];
+
+      if (usuario is! Map) {
+        throw Exception(
+          'El servidor no devolvió los datos del usuario.',
+        );
+      }
+
+      final idUsuario = usuario['id_usuario'];
+      final idNumerico = int.tryParse(idUsuario.toString());
+
+      if (idNumerico == null || idNumerico <= 0) {
+        throw Exception(
+          'El servidor no devolvió un id_usuario válido. '
+          'Revisa la respuesta del login en el backend.',
+        );
+      }
+
+      final token = respuesta['token']?.toString() ?? '';
+
+      if (token.isEmpty) {
+        throw Exception('El servidor no devolvió el token.');
+      }
+
       final prefs = await SharedPreferences.getInstance();
 
-      final token = respuesta['token'] ?? '';
+      await prefs.setString('jwt_token', token);
       await prefs.setString(
-        'jwt_token',
-        token,
+        'id_usuario',
+        idNumerico.toString(),
       );
-
-      final usuario = respuesta['usuario'] ?? {};
-
-      final nombreUsuario = usuario['nombre'] ?? '';
-      final correoUsuario = usuario['email'] ?? email;
-      final rolUsuario = usuario['rol'] ?? 'Usuario';
-
       await prefs.setString(
         'user_name',
-        nombreUsuario,
+        usuario['nombre']?.toString() ?? '',
       );
-
       await prefs.setString(
         'user_email',
-        correoUsuario,
+        usuario['email']?.toString() ?? email,
       );
-
       await prefs.setString(
         'user_role',
-        rolUsuario,
+        usuario['rol']?.toString() ?? 'Usuario',
       );
-
-      await prefs.setString('user_correo', email); 
+      await prefs.setString('user_correo', email);
 
       if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomeScreen(
-          ),
+          builder: (_) => const HomeScreen(),
         ),
       );
     } catch (e) {
       if (mounted) {
         _mostrarMensaje(
-          e.toString(),
+          e.toString().replaceFirst('Exception: ', ''),
           esError: true,
         );
       }
@@ -178,9 +179,8 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: esError
-            ? Colors.red.shade700
-            : Colors.green.shade700,
+        backgroundColor:
+            esError ? Colors.red.shade700 : Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -197,10 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             color: AppColors.fondo,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white12,
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white12),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.25),
@@ -213,43 +210,27 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ClipOval(
-                child: Image(
-                  image: const AssetImage(
-                    "assets/images/logo.png",
-                  ),
+                child: Image.asset(
+                  'assets/images/logo.png',
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
                 ),
               ),
-
               const SizedBox(height: 10),
-
+              Text('S-Inventory', style: Estilotextos.Titulos),
               Text(
-                "S-Inventory",
-                style: Estilotextos.Titulos,
-              ),
-
-              Text(
-                "Gestion inteligente de inventario",
+                'Gestion inteligente de inventario',
                 style: Estilotextos.textoSecundario,
               ),
-
               const SizedBox(height: 30),
-
-              _campo(
-                'Correo Electrónico',
-                _emailController,
-              ),
-
+              _campo('Correo Electrónico', _emailController),
               const SizedBox(height: 30),
-
               _campo(
                 'Contraseña',
                 _contrasenaController,
                 contrasena: true,
               ),
-
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -257,8 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const Recoverypassword(),
+                        builder: (_) => const Recoverypassword(),
                       ),
                     );
                   },
@@ -268,9 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 30),
-
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -286,8 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed:
-                    _isLoading ? null : _iniciarSesion,
+                onPressed: _isLoading ? null : _iniciarSesion,
                 child: _isLoading
                     ? const SizedBox(
                         width: 30,
@@ -297,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       )
                     : const Text(
-                        'Iniciar sesion',
+                        'Iniciar sesión',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,

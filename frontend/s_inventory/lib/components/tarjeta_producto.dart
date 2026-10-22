@@ -13,8 +13,20 @@ class TarjetaProductoInventario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nombre = producto['nombre']?.toString() ?? 'Sin nombre';
-    final categoria = producto['categoria']?.toString() ?? '';
+    final nombre =
+        producto['nombre']?.toString() ?? 'Sin nombre';
+
+    final categoriaCompleta =
+        producto['categoria']?.toString() ?? '';
+
+    final partesCategoria = categoriaCompleta.split(' - ');
+
+    final categoria = partesCategoria.first.trim();
+
+    final tipoProducto = partesCategoria.length > 1
+        ? partesCategoria.sublist(1).join(' - ').trim()
+        : '';
+
     final imagen = producto['imagen']?.toString() ?? '';
 
     final stock =
@@ -46,17 +58,19 @@ class TarjetaProductoInventario extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: imagen.isEmpty
+            child: imagen.trim().isEmpty
                 ? _imagenVacia()
                 : Image.network(
                     imagen,
                     width: 65,
                     height: 65,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _imagenVacia(),
+                    errorBuilder: (_, __, ___) =>
+                        _imagenVacia(),
                   ),
           ),
           const SizedBox(width: 12),
@@ -72,22 +86,31 @@ class TarjetaProductoInventario extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+
                 if (categoria.isNotEmpty) ...[
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
-                    categoria,
+                    tipoProducto.isEmpty
+                        ? categoria
+                        : '$categoria · $tipoProducto',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Estilotextos.textoSecundario,
                   ),
                 ],
-                const SizedBox(height: 6),
+
+                const SizedBox(height: 7),
+
                 Text(
                   'Precio: \$${precio.toStringAsFixed(0)}',
                   style: Estilotextos.textoSecundario,
                 ),
-                const SizedBox(height: 5),
+
+                const SizedBox(height: 6),
+
                 Wrap(
                   spacing: 7,
-                  runSpacing: 4,
+                  runSpacing: 5,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
@@ -127,6 +150,7 @@ class TarjetaProductoInventario extends StatelessWidget {
       width: 65,
       height: 65,
       color: Colors.white.withOpacity(0.07),
+      alignment: Alignment.center,
       child: const Icon(
         Icons.inventory_2_outlined,
         color: Colors.white70,

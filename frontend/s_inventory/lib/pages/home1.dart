@@ -1,116 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:s_inventory/components/app_bar_home.dart';
-import 'package:s_inventory/components/bottom_navigation.dart';
-import 'package:s_inventory/components/perfil_dialog.dart';
-import 'package:s_inventory/components/login.dart';
-
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/components/buscador_productos.dart';
+import 'package:s_inventory/components/inicio/carrusel_inicio.dart';
+import 'package:s_inventory/components/inicio/accesos_rapidos.dart';
+import 'package:s_inventory/pages/registrar_ventas.dart';
 
-import 'package:s_inventory/pages/home1.dart';
-import 'package:s_inventory/pages/inventario.dart';
-import 'package:s_inventory/pages/boxia.dart';
-import 'package:s_inventory/pages/reportes.dart';
-import 'package:s_inventory/pages/ajustes.dart';
-import 'package:s_inventory/pages/notificaciones.dart';
+class Home1 extends StatelessWidget {
+  final VoidCallback onInventario;
+  final VoidCallback onReportes;
 
-class Home1Screen extends StatefulWidget {
-  const Home1Screen({super.key});
+  const Home1({
+    super.key,
+    required this.onInventario,
+    required this.onReportes,
+  });
 
-  @override
-  State<Home1Screen> createState() => _Home1ScreenState();
-}
-
-class _Home1ScreenState extends State<Home1Screen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-
-  String _nombre = '';
-  String _correo = '';
-
-  @override
-  void initState() {
-    super.initState();
-
-    _tabController = TabController(
-      length: 5,
-      vsync: this,
-    );
-
-    _cargarUsuario();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _cargarUsuario() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    if (!mounted) return;
-
-    setState(() {
-      _nombre = prefs.getString('user_name') ?? 'Usuario';
-      _correo = prefs.getString('user_email') ?? '';
-    });
-  }
-
-  Future<void> _cerrarSesion() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-
-    if (!mounted) return;
-
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-      ),
-      (route) => false,
-    );
-  }
-
-  void _mostrarPerfil() {
-    mostrarPerfil(
-      context: context,
-      nombre: _nombre,
-      correo: _correo,
-      cerrarSesion: _cerrarSesion,
-    );
-  }
-
-  void _mostrarNotificaciones() {
-    Navigator.push(
+  Future<void> _abrirVenta(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const NotificacionesPage(),
+        builder: (_) => const RegistrarVenta(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.fondo,
-      appBar: AppBarHome(
-        nombre: _nombre,
-        onPerfil: _mostrarPerfil,
-        onNotificaciones: _mostrarNotificaciones,
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          Home1Screen(),
-          Inventario(),
-          Boxia(),
-          Reportes(),
-          Ajustes(),
+    return Container(
+      color: AppColors.fondo,
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text(
+            '¡Hola, administrador!',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            'Controla tu inventario y mantén tu negocio en orden.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.65),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 22),
+          const BuscadorProductos(),
+          const SizedBox(height: 24),
+          const CarruselInicio(),
+          const SizedBox(height: 28),
+          const Text(
+            'Accesos rápidos',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 14),
+          AccesosRapidos(
+            onVenta: () => _abrirVenta(context),
+            onAgregarProducto: onInventario,
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.fondoComponentes,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  color: AppColors.accent,
+                  size: 30,
+                ),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Un consejo para ti',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Mantén las existencias actualizadas para '
+                        'evitar faltantes y controlar mejor tu negocio.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
         ],
-      ),
-      bottomNavigationBar: BottomNavigation(
-        controller: _tabController,
       ),
     );
   }
