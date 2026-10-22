@@ -14,6 +14,7 @@ import 'package:s_inventory/pages/boxia.dart';
 import 'package:s_inventory/pages/reportes.dart';
 import 'package:s_inventory/pages/ajustes.dart';
 import 'package:s_inventory/pages/notificaciones.dart';
+import 'package:s_inventory/pages/registrar_producto.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,23 +25,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+  late TabController _tabController;
 
-  String _nombre = '';
+  String _nombre = 'Administrador';
   String _correo = '';
 
   @override
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 5, vsync: this);
-    _cargarUsuario();
-  }
+    _tabController = TabController(
+      length: 5,
+      vsync: this,
+    );
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    _cargarUsuario();
   }
 
   Future<void> _cargarUsuario() async {
@@ -49,9 +48,35 @@ class _HomeScreenState extends State<HomeScreen>
     if (!mounted) return;
 
     setState(() {
-      _nombre = prefs.getString('user_name') ?? 'Usuario';
+      _nombre = prefs.getString('user_name') ?? 'Administrador';
       _correo = prefs.getString('user_email') ?? '';
     });
+  }
+
+  // Abre el registro desde Inicio.
+  // Si guarda correctamente, cambia a Inventario.
+  Future<void> _abrirRegistroProducto() async {
+    final resultado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const RegistrarProductoPage(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (resultado == true) {
+      _tabController.animateTo(1);
+    }
+  }
+
+  Future<void> _abrirNotificaciones() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const NotificacionesPage(),
+      ),
+    );
   }
 
   Future<void> _cerrarSesion() async {
@@ -60,28 +85,28 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (!mounted) return;
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
       (route) => false,
     );
   }
 
-  void _mostrarPerfil() {
-    mostrarPerfil(
-      context: context,
-      nombre: _nombre,
-      correo: _correo,
-      cerrarSesion: _cerrarSesion,
-    );
-  }
+void _mostrarPerfil() {
+  mostrarPerfil(
+    context: context,
+    nombre: _nombre,
+    correo: _correo,
+    cerrarSesion: _cerrarSesion,
+  );
+}
 
-  void _mostrarNotificaciones() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const NotificacionesPage(),
-      ),
-    );
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -91,13 +116,13 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBarHome(
         nombre: _nombre,
         onPerfil: _mostrarPerfil,
-        onNotificaciones: _mostrarNotificaciones,
+        onNotificaciones: _abrirNotificaciones,
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
           Home1(
-            onInventario: () => _tabController.animateTo(1),
+            onAgregarProducto: _abrirRegistroProducto,
             onReportes: () => _tabController.animateTo(3),
           ),
           const Inventario(),
