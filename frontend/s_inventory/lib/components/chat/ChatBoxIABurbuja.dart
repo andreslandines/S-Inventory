@@ -41,7 +41,7 @@ class ChatBurbuja extends StatelessWidget {
                 texto,
                 style: TextStyle(
                   color: esUsuario ? Colors.white : Colors.black87,
-                  fontSize: 14,
+                  fontSize: 16,
                   height: 1.35,
                 ),
               ),
@@ -53,7 +53,7 @@ class ChatBurbuja extends StatelessWidget {
                 horaMostrar,
                 style: TextStyle(
                   color: const Color.fromARGB(255, 255, 254, 254),
-                  fontSize: 11,
+                  fontSize: 12.5,
                 ),
               ),
             ),
@@ -66,8 +66,8 @@ class ChatBurbuja extends StatelessWidget {
 
   String _horaActual() {
     final ahora = DateTime.now();
-    final hora = ahora.hour.toString().padLeft(2, '0');
-    final minuto = ahora.minute.toString().padLeft(2, '0');
+    final hora = ahora.hour.toString().padLeft(4, '0');
+    final minuto = ahora.minute.toString().padLeft(4, '0');
     return '$hora:$minuto';
   }
 }
