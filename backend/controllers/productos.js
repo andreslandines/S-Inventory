@@ -104,15 +104,41 @@ export const editar = async (req, res) => {
   }
 };
 
+
 export const eliminar = async (req, res) => {
   try {
     const { id_productos } = req.params;
-    const { error } = await eliminarproductos(id_productos);
-    if (error) return res.status(500).json({ error: 'Error al eliminar' });
-    return res.status(200).json({ message: 'Eliminado' });
+
+    const { data, error } = await eliminarproductos(id_productos);
+
+    if (error) {
+      console.error('Error al eliminar producto:', error);
+
+      if (error.code === '23503') {
+        return res.status(409).json({
+          error: 'No se puede eliminar este producto porque tiene ventas o movimientos asociados.'
+        });
+      }
+
+      return res.status(500).json({
+        error: 'Error al eliminar el producto.'
+      });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        error: 'Producto no encontrado.'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Producto eliminado correctamente.'
+    });
   } catch (error) {
+    console.error('Error inesperado al eliminar:', error);
 
-    return res.status(500).json({ error: error.message });
-
+    return res.status(500).json({
+      error: 'Error interno al eliminar el producto.'
+    });
   }
 };
