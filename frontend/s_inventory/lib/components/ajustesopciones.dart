@@ -2,6 +2,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/pages/notificaciones.dart';
 import 'package:s_inventory/pages/perfil.dart';
 import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,7 +105,15 @@ class OpcionMenu3 extends StatelessWidget {
           color: Colors.white54,
           size: 23,
         ),
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  const NotificacionesPage(),
+            ),
+          );
+        },
       ),
     );
   }

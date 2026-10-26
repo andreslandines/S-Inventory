@@ -1,8 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/services/ventas_servicios.dart';
+
+import 'package:s_inventory/components/encabezado_reportes.dart';
+import 'package:s_inventory/components/lista_ventas_recientes.dart';
+import 'package:s_inventory/components/grafico_semanal.dart';
+import 'package:s_inventory/components/indicador_reporte.dart';
+
 
 class Reportes extends StatefulWidget {
   const Reportes({super.key});
@@ -12,13 +17,78 @@ class Reportes extends StatefulWidget {
 }
 
 class _ReportesState extends State<Reportes> {
-  final _ventasService = VentaService();
-  final _productosService = ProductoService();
+  final _ventaService = VentaService();
+  final _productoService = ProductoService();
 
   List<Map<String, dynamic>> _ventas = [];
   List<Map<String, dynamic>> _productos = [];
+
   bool _cargando = true;
   String? _error;
+
+  List<Map<String, dynamic>> get _ventasSemana {
+    final hoy = DateTime.now();
+    final inicio = DateTime(
+      hoy.year,
+      hoy.month,
+      hoy.day,
+    ).subtract(const Duration(days: 6));
+
+    final fin = DateTime(
+      hoy.year,
+      hoy.month,
+      hoy.day,
+    ).add(const Duration(days: 1));
+
+    return _ventas.where((venta) {
+      final fecha = DateTime.tryParse(
+        venta['fecha']?.toString() ?? '',
+      );
+
+      return fecha != null &&
+          !fecha.isBefore(inicio) &&
+          fecha.isBefore(fin);
+    }).toList();
+  }
+
+  double get _totalSemana {
+    return _ventasSemana.fold<double>(
+      0,
+      (suma, venta) =>
+          suma +
+          (double.tryParse(
+                venta['total']?.toString() ?? '0',
+              ) ??
+              0),
+    );
+  }
+
+  int get _stockBajo {
+    return _productos.where((producto) {
+      final stock = int.tryParse(
+            producto['stock']?.toString() ?? '0',
+          ) ??
+          0;
+
+      return stock <= 5;
+    }).length;
+  }
+
+  String _dinero(num valor) {
+    final entero = valor.round().toString();
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < entero.length; i++) {
+      buffer.write(entero[i]);
+
+      final restantes = entero.length - i - 1;
+      if (restantes > 0 && restantes % 3 == 0) {
+        buffer.write('.');
+      }
+    }
+
+    return '\$ $buffer';
+  }
 
   @override
   void initState() {
@@ -34,370 +104,153 @@ class _ReportesState extends State<Reportes> {
 
     try {
       final datos = await Future.wait([
-        _ventasService.obtenerVentas(),
-        _productosService.obtenerProductos(),
+        _ventaService.obtenerVentas(),
+        _productoService.obtenerProductos(),
       ]);
 
       if (!mounted) return;
 
       setState(() {
-        _ventas = datos[0];
-        _productos = datos[1];
+        _ventas = List<Map<String, dynamic>>.from(datos[0]);
+        _productos = List<Map<String, dynamic>>.from(datos[1]);
         _cargando = false;
       });
     } catch (e) {
       if (!mounted) return;
+
       setState(() {
-        _error = e.toString();
+        _error = 'No fue posible cargar los reportes.\n$e';
         _cargando = false;
       });
     }
   }
 
-  DateTime? _fecha(Map<String, dynamic> venta) =>
-      DateTime.tryParse('${venta['fecha'] ?? ''}')?.toLocal();
-
-  List<Map<String, dynamic>> get _ventasSemana {
-    final hoy = DateTime.now();
-    final inicio = DateTime(hoy.year, hoy.month, hoy.day)
-        .subtract(const Duration(days: 6));
-
-    return _ventas.where((venta) {
-      final fecha = _fecha(venta);
-      return fecha != null &&
-          !fecha.isBefore(inicio) &&
-          !fecha.isAfter(hoy);
-    }).toList();
-  }
-
-  double get _totalSemana => _ventasSemana.fold<double>(
-        0,
-        (suma, venta) =>
-            suma + (double.tryParse('${venta['total']}') ?? 0),
-      );
-
-  int get _stockBajo => _productos.where((p) {
-        return (int.tryParse('${p['stock']}') ?? 0) <= 5;
-      }).length;
-
-  String _dinero(num valor) => '\$${valor.toStringAsFixed(0)}';
-
-  String _dia(DateTime fecha) {
-    const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    return dias[fecha.weekday - 1];
-  }
-
-  String _fechaTexto(DateTime fecha) {
-    final dia = fecha.day.toString().padLeft(2, '0');
-    final mes = fecha.month.toString().padLeft(2, '0');
-    final hora = fecha.hour.toString().padLeft(2, '0');
-    final minuto = fecha.minute.toString().padLeft(2, '0');
-    return '$dia/$mes/${fecha.year} · $hora:$minuto';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.fondo,
-      child: RefreshIndicator(
-        onRefresh: _cargarDatos,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text(
-              'Reportes',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Conoce el movimiento de tu negocio.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 20),
-            if (_cargando)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(30),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else if (_error != null)
-              _estadoError()
-            else ...[
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1.35,
-                children: [
-                  _indicador(
-                    'Ventas de 7 días',
-                    _dinero(_totalSemana),
-                    Icons.payments_outlined,
-                    AppColors.secondary,
-                  ),
-                  _indicador(
-                    'Número de ventas',
-                    '${_ventasSemana.length}',
-                    Icons.receipt_long_outlined,
-                    AppColors.accent,
-                  ),
-                  _indicador(
-                    'Productos',
-                    '${_productos.length}',
-                    Icons.inventory_2_outlined,
-                    const Color(0xFF4CAF87),
-                  ),
-                  _indicador(
-                    'Stock bajo',
-                    '$_stockBajo',
-                    Icons.warning_amber_rounded,
-                    Colors.orangeAccent,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Ventas de los últimos 7 días',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _graficoSemanal(),
-              const SizedBox(height: 24),
-              const Text(
-                'Ventas recientes',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (_ventas.isEmpty)
-                _mensaje('Todavía no hay ventas registradas.')
-              else
-                ..._ventas.take(8).map(_filaVenta),
-              const SizedBox(height: 16),
-              const Text(
-                'Consideramos stock bajo cuando hay 5 unidades o menos.',
-                style: TextStyle(color: Colors.white54, fontSize: 12),
-              ),
-            ],
-          ],
+  Widget _titulo(String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, top: 4),
+      child: Text(
+        texto,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 17,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget _indicador(
-    String titulo,
-    String valor,
-    IconData icono,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.fondoComponentes,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(icono, color: color, size: 23),
-          Text(
-            valor,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            titulo,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _graficoSemanal() {
-    final hoy = DateTime.now();
-    final inicio = DateTime(hoy.year, hoy.month, hoy.day)
-        .subtract(const Duration(days: 6));
-
-    final valores = List<double>.generate(7, (i) {
-      final dia = inicio.add(Duration(days: i));
-
-      return _ventasSemana.where((venta) {
-        final fecha = _fecha(venta);
-        return fecha != null &&
-            fecha.year == dia.year &&
-            fecha.month == dia.month &&
-            fecha.day == dia.day;
-      }).fold<double>(
-        0,
-        (suma, venta) =>
-            suma + (double.tryParse('${venta['total']}') ?? 0),
-      );
-    });
-
-    final maximo = valores.fold<double>(
-      0,
-      (a, b) => a > b ? a : b,
-    );
-
-    return Container(
-      height: 160,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.fondoComponentes,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(7, (i) {
-          final dia = inicio.add(Duration(days: i));
-          final altura =
-              maximo == 0 ? 5.0 : valores[i] / maximo * 85;
-
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: altura,
-                        width: 18,
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    _dia(dia),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _filaVenta(Map<String, dynamic> venta) {
-    final fecha = _fecha(venta);
-    final total = double.tryParse('${venta['total']}') ?? 0;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            backgroundColor: AppColors.primary,
-            child: Icon(Icons.receipt_long, color: Colors.white),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Venta #${venta['id_venta'] ?? '—'}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  fecha == null
-                      ? 'Fecha no disponible'
-                      : _fechaTexto(fecha),
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            _dinero(total),
-            style: const TextStyle(
-              color: AppColors.accent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _estadoError() {
-    return Column(
+  Widget _estadisticas() {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.12,
       children: [
-        const Icon(Icons.cloud_off, color: Colors.white54, size: 42),
-        const SizedBox(height: 10),
-        Text(
-          _error!,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+        IndicadorReporte(
+          titulo: 'Ingresos semanales',
+          valor: _dinero(_totalSemana),
+          descripcion: 'Últimos 7 días',
+          icono: Icons.payments_outlined,
+          color: AppColors.accent,
         ),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: _cargarDatos,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Reintentar'),
+        IndicadorReporte(
+          titulo: 'Ventas semanales',
+          valor: '${_ventasSemana.length}',
+          descripcion: 'Operaciones realizadas',
+          icono: Icons.shopping_cart_outlined,
+          color: AppColors.secondary,
+        ),
+        IndicadorReporte(
+          titulo: 'Productos',
+          valor: '${_productos.length}',
+          descripcion: 'En el inventario',
+          icono: Icons.inventory_2_outlined,
+          color: const Color(0xFF67D5B5),
+        ),
+        IndicadorReporte(
+          titulo: 'Stock bajo',
+          valor: '$_stockBajo',
+          descripcion: 'Productos con stock ≤ 5',
+          icono: Icons.warning_amber_rounded,
+          color: const Color(0xFFFF7777),
         ),
       ],
     );
   }
 
-  Widget _mensaje(String texto) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.fondoComponentes,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white70),
+  Widget _contenido() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      children: [
+        EncabezadoReportes(onActualizar: _cargarDatos),
+        const SizedBox(height: 22),
+        _titulo('Resumen general'),
+        _estadisticas(),
+        const SizedBox(height: 22),
+        GraficoSemanal(
+          ventas: _ventasSemana,
+          formatearDinero: _dinero,
+        ),
+        const SizedBox(height: 22),
+        ListaVentasRecientes(
+          ventas: _ventas,
+          formatearDinero: _dinero,
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.fondo,
+      body: SafeArea(
+        child: _cargando
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.accent,
+                ),
+              )
+            : _error != null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.cloud_off_rounded,
+                            color: Color(0xFFFF7777),
+                            size: 42,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: _cargarDatos,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : RefreshIndicator(
+                    color: AppColors.accent,
+                    backgroundColor: AppColors.fondoComponentes,
+                    onRefresh: _cargarDatos,
+                    child: _contenido(),
+                  ),
       ),
     );
   }

@@ -102,4 +102,27 @@ class VentaService {
           'Código HTTP: ${respuesta.statusCode}',
     );
   }
+
+  Future<Map<String, dynamic>> obtenerVentaPorId(
+  String idVenta,
+) async {
+  final respuesta = await http.get(
+    Uri.parse('${ApiConfig.baseUrl}/ventas/$idVenta'),
+    headers: await _headers(),
+  );
+
+  if (respuesta.statusCode != 200) {
+    throw Exception(
+      'No se pudo consultar el recibo de la venta.',
+    );
+  }
+
+  final datos = jsonDecode(respuesta.body);
+
+  if (datos is Map<String, dynamic>) {
+    return datos;
+  }
+
+  throw Exception('La información del recibo no es válida.');
+}
 }

@@ -45,13 +45,18 @@ class AccesosRapidos extends StatelessWidget {
                     horizontal: 8,
                     vertical: 16,
                   ),
-                  decoration: BoxDecoration(
-                    color: AppColors.fondoComponentes,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.07),
-                    ),
+                   decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white12, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                          color: Colors.white.withOpacity(0.02),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
+                ],
+              ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

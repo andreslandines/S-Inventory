@@ -160,7 +160,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
             PopupMenuButton<String>(
               tooltip: 'Filtrar por categoría',
               initialValue: categoriaSeleccionada,
-              color: AppColors.fondoComponentes,
+              color: AppColors.fondo.withOpacity(0.90),
               icon: Icon(
                 Icons.filter_list_rounded,
                 color: filtroActivo ? AppColors.accent : Colors.white,
@@ -213,7 +213,6 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
                   child: Text(
                     'Categoría: $categoriaSeleccionada',
                     style: const TextStyle(
-                      color: Colors.white70,
                       fontSize: 12,
                     ),
                   ),
