@@ -1,11 +1,12 @@
-
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/pages/home.dart';
 import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../services/user_service.dart';
+import '../services/notificacion_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -149,6 +150,11 @@ class _LoginScreenState extends State<LoginScreen> {
         usuario['rol']?.toString() ?? 'Usuario',
       );
       await prefs.setString('user_correo', email);
+      try {
+        await NotificacionService.inicializar();
+      } catch (e) {
+        debugPrint('No se pudo inicializar FCM: $e');
+      }
 
       if (!mounted) return;
 

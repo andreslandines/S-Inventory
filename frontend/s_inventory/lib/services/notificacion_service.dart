@@ -1,8 +1,9 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:s_inventory/firebase_options.dart';
+
+import 'dispositivo_fcm_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> manejarMensajeEnSegundoPlano(
@@ -26,8 +27,9 @@ class NotificacionService {
   static bool _inicializado = false;
 
   static Future<String?> inicializar() async {
-    // Este servicio solo se habilita en Android.
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+    // Las notificaciones push se habilitan solo en Android.
+    if (kIsWeb ||
+        defaultTargetPlatform != TargetPlatform.android) {
       debugPrint(
         'Las notificaciones solo están habilitadas en Android.',
       );
@@ -64,7 +66,9 @@ class NotificacionService {
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen((mensaje) {
-        debugPrint('El usuario abrió una notificación push.');
+        debugPrint(
+          'El usuario abrió una notificación push.',
+        );
       });
 
       final mensajeInicial =
@@ -79,6 +83,13 @@ class NotificacionService {
       _inicializado = true;
     }
 
-    return _messaging.getToken();
+    final token = await _messaging.getToken();
+
+    if (token != null && token.isNotEmpty) {
+      await DispositivoFcmService.registrarToken(token);
+    }
+
+    // Devolvemos el token aunque el registro en el backend falle.
+    return token;
   }
 }

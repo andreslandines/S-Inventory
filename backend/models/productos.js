@@ -1,8 +1,11 @@
 import{supabase} from '../config/supabase.js';
 
 export const obtenerTodos = async () => {
-    const { data, error } = await
-supabase.from ('productos').select ('*');
+    const { data, error } = await supabase
+        .from('productos')
+        .select('*')
+        .eq('activo', true);
+
     return { data, error };
 };
 
@@ -38,9 +41,12 @@ return { data, error };
 };
 
 
-export const eliminarproductos = async (id_productos) =>
-{
+export const eliminarproductos = async (id_productos) => {
     const { data, error } = await supabase
-.from ('productos').delete().eq('id_productos', id_productos);
-return { data, error };
+        .from('productos')
+        .update({ activo: false })
+        .eq('id_productos', id_productos)
+        .select();
+
+    return { data, error };
 };

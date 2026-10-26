@@ -1,3 +1,4 @@
+
 import express from "express";
 
 import {
@@ -5,32 +6,30 @@ import {
     obtenerNotificacion,
     registrarNotificacion,
     marcarComoLeida,
-    borrarNotificacion
+    borrarNotificacion,
+    registrarTokenFcm
 } from "../controllers/notificaciones.js";
 
 import { verificarToken } from "../middlewares/authmiddlewares.js";
 
 const router = express.Router();
 
+// Registrar el token de Firebase del dispositivo autenticado
+router.post("/token", verificarToken, registrarTokenFcm);
 
 // Obtener mis notificaciones
 router.get("/", verificarToken, listarNotificaciones);
 
-
 // Obtener una notificación específica
 router.get("/:id_notificacion", verificarToken, obtenerNotificacion);
-
 
 // Crear una notificación
 router.post("/", verificarToken, registrarNotificacion);
 
-
 // Marcar como leída
 router.put("/:id_notificacion/leida", verificarToken, marcarComoLeida);
 
-
 // Eliminar una notificación
 router.delete("/:id_notificacion", verificarToken, borrarNotificacion);
-
 
 export default router;

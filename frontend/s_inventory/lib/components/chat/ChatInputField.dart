@@ -30,7 +30,7 @@ class ChatInputField extends StatelessWidget {
                 enabled: !cargando,
                 decoration: const InputDecoration(
                   hintText: 'Pregunta por productos, precios, stock, fechas de vencimiento...',
-                  hintStyle: TextStyle(color: Colors.black38, fontSize: 13),
+                  hintStyle: TextStyle(color: Colors.black38, fontSize: 15),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
