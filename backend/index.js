@@ -25,12 +25,15 @@ app.use(cors());
 //CREAMOS LA RUTA
 app.get('/',(req,res)=>{
     res.json({
-        Mensaje:"Bienvenido al BACKEND de MIMOS",
+        Mensaje:"Bienvenido al BACKEND de S-Inventory",
         Estado: "En linea",
         Version:"1.0.0"
     })
 })
 
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+})
 
 //ruta de autenticacion
 app.use('/auth', AuthRoutes);
