@@ -4,21 +4,21 @@ import 'package:s_inventory/pages/recoverycodes.dart';
 import '../services/user_service.dart';
 import '../components/inicio/login.dart';
 
-class password extends StatefulWidget {
+class Password extends StatefulWidget {
   final String email;
   final String codigo;
 
-  const password({
+  const Password({
     super.key,
     required this.email,
     required this.codigo,
   });
 
   @override
-  State<password> createState() => _passwordState();
+  State<Password> createState() => _PasswordState();
 }
 
-class _passwordState extends State<password> {
+class _PasswordState extends State<Password> {
   final _nueva = TextEditingController();
   final _confirmar = TextEditingController();
   final _userService = UserService();

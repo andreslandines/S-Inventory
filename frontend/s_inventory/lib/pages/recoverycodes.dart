@@ -100,7 +100,7 @@ class _RecoverypasswordState extends State<Recoverypassword> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => password(
+          builder: (context) => Password(
             email: email,
             codigo: codigo,
           ),
