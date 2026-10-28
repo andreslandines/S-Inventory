@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
@@ -19,50 +18,37 @@ class ResumenInventario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.35,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _tarjeta(
-                'Productos',
-                totalProductos,
-                Icons.inventory_2_outlined,
-                AppColors.secondary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _tarjeta(
-                'Unidades',
-                unidades,
-                Icons.warehouse_outlined,
-                Colors.white,
-              ),
-            ),
-          ],
+        _tarjeta(
+          'Productos',
+          totalProductos,
+          Icons.inventory_2_outlined,
+          AppColors.secondary,
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _tarjeta(
-                'Stock bajo',
-                stockBajo,
-                Icons.warning_amber_rounded,
-                AppColors.accent,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _tarjeta(
-                'Agotados',
-                agotados,
-                Icons.remove_shopping_cart_outlined,
-                const Color(0xFFFF7777),
-              ),
-            ),
-          ],
+        _tarjeta(
+          'Unidades',
+          unidades,
+          Icons.warehouse_outlined,
+          Colors.white,
+        ),
+        _tarjeta(
+          'Stock bajo',
+          stockBajo,
+          Icons.warning_amber_rounded,
+          AppColors.accent,
+        ),
+        _tarjeta(
+          'Agotados',
+          agotados,
+          Icons.remove_shopping_cart_outlined,
+          const Color(0xFFFF7777),
         ),
       ],
     );
@@ -75,46 +61,70 @@ class ResumenInventario extends StatelessWidget {
     Color color,
   ) {
     return Container(
-     margin: const EdgeInsets.only(left: 3, right: 3, bottom: 3),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white12, width: 1),
+        color: const Color(0xFFA4A1A1).withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white12,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-                  color: Colors.white.withOpacity(0.02),
+            color: Colors.white.withOpacity(0.02),
             blurRadius: 10,
-            offset: const Offset(0,20),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final ancho = constraints.maxWidth;
+          final alto = constraints.maxHeight;
+
+          final double tamanoIcono =
+              (ancho * 0.17).clamp(20.0, 32.0).toDouble();
+
+          final double tamanoNumero =
+              (ancho * 0.20).clamp(22.0, 34.0).toDouble();
+
+          final double tamanoTitulo =
+              (ancho * 0.10).clamp(12.0, 16.0).toDouble();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icono, color: color, size: 24),
-              const SizedBox(width: 8),
-              Expanded(
+              Icon(
+                icono,
+                color: color,
+                size: tamanoIcono,
+              ),
+              const Spacer(),
+              Text(
+                titulo,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Estilotextos.textoPequeno.copyWith(
+                  color: Colors.white70,
+                  fontSize: tamanoTitulo,
+                ),
+              ),
+              SizedBox(height: alto < 100 ? 2 : 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
                 child: Text(
-                  titulo,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Estilotextos.textoPequeno,
+                  '$valor',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: tamanoNumero,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
-          ),
-          Text(
-            '$valor',
-            style: TextStyle(
-              color: color,
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
