@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
-import 'package:s_inventory/components/ajustesopciones.dart';
-import 'package:s_inventory/components/login.dart';
+import 'package:s_inventory/components/inicio/ajustesopciones.dart';
+import 'package:s_inventory/components/inicio/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Ajustes extends StatefulWidget {

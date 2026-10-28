@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/pages/recoverycodes.dart';
 import '../services/user_service.dart';
-import '../components/login.dart';
+import '../components/inicio/login.dart';
 
 class password extends StatefulWidget {
   final String email;

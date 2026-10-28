@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/models/chat_boxia.dart';
-import '../PanelHistorial.dart';
+import 'PanelHistorial.dart';
 
 
 class ChatHeader extends StatelessWidget {

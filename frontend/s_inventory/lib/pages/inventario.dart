@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:s_inventory/components/buscador_productos.dart';
-import 'package:s_inventory/components/confirmar_eliminar_producto.dart';
-import 'package:s_inventory/components/formulario_editar_producto.dart';
-import 'package:s_inventory/components/resumen_inventario.dart';
-import 'package:s_inventory/components/tarjeta_producto.dart';
+import 'package:s_inventory/components/producto/buscador_productos.dart';
+import 'package:s_inventory/components/producto/confirmar_eliminar_producto.dart';
+import 'package:s_inventory/components/producto/formulario_editar_producto.dart';
+import 'package:s_inventory/components/inventario/resumen_inventario.dart';
+import 'package:s_inventory/components/producto/tarjeta_producto.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/pages/registrar_producto.dart';

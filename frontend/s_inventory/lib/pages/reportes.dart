@@ -3,10 +3,10 @@ import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/services/ventas_servicios.dart';
 
-import 'package:s_inventory/components/encabezado_reportes.dart';
-import 'package:s_inventory/components/lista_ventas_recientes.dart';
-import 'package:s_inventory/components/grafico_semanal.dart';
-import 'package:s_inventory/components/indicador_reporte.dart';
+import 'package:s_inventory/components/reportes/encabezado_reportes.dart';
+import 'package:s_inventory/components/ventas/lista_ventas_recientes.dart';
+import 'package:s_inventory/components/reportes/grafico_semanal.dart';
+import 'package:s_inventory/components/reportes/indicador_reporte.dart';
 
 
 class Reportes extends StatefulWidget {
@@ -139,46 +139,49 @@ class _ReportesState extends State<Reportes> {
     );
   }
 
-  Widget _estadisticas() {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.12,
-      children: [
-        IndicadorReporte(
-          titulo: 'Ingresos semanales',
-          valor: _dinero(_totalSemana),
-          descripcion: 'Últimos 7 días',
-          icono: Icons.payments_outlined,
-          color: AppColors.accent,
-        ),
-        IndicadorReporte(
-          titulo: 'Ventas semanales',
-          valor: '${_ventasSemana.length}',
-          descripcion: 'Operaciones realizadas',
-          icono: Icons.shopping_cart_outlined,
-          color: AppColors.secondary,
-        ),
-        IndicadorReporte(
-          titulo: 'Productos',
-          valor: '${_productos.length}',
-          descripcion: 'En el inventario',
-          icono: Icons.inventory_2_outlined,
-          color: const Color(0xFF67D5B5),
-        ),
-        IndicadorReporte(
-          titulo: 'Stock bajo',
-          valor: '$_stockBajo',
-          descripcion: 'Productos con stock ≤ 5',
-          icono: Icons.warning_amber_rounded,
-          color: const Color(0xFFFF7777),
-        ),
-      ],
-    );
-  }
+ 
+Widget _estadisticas() {
+  return GridView.count(
+    crossAxisCount: 2,
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    mainAxisSpacing: 14,
+    crossAxisSpacing: 14,
+    childAspectRatio: 1.35,
+    padding: EdgeInsets.zero,
+    children: [
+      IndicadorReporte(
+        titulo: 'Ingresos semanales',
+        valor: _dinero(_totalSemana),
+        descripcion: 'Últimos 7 días',
+        icono: Icons.payments_outlined,
+        color: AppColors.accent,
+      ),
+      IndicadorReporte(
+        titulo: 'Ventas semanales',
+        valor: '${_ventasSemana.length}',
+        descripcion: 'Operaciones realizadas',
+        icono: Icons.shopping_cart_outlined,
+        color: AppColors.secondary,
+      ),
+      IndicadorReporte(
+        titulo: 'Productos',
+        valor: '${_productos.length}',
+        descripcion: 'En el inventario',
+        icono: Icons.inventory_2_outlined,
+        color: const Color(0xFF67D5B5),
+      ),
+      IndicadorReporte(
+        titulo: 'Stock bajo',
+        valor: '$_stockBajo',
+        descripcion: 'Productos con stock ≤ 5',
+        icono: Icons.warning_amber_rounded,
+        color: const Color(0xFFFF7777),
+      ),
+    ],
+  );
+}
+
 
   Widget _contenido() {
     return ListView(

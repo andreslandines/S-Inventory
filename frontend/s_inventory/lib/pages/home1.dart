@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
-import 'package:s_inventory/components/buscador_productos.dart';
+import 'package:s_inventory/components/producto/buscador_productos.dart';
 import 'package:s_inventory/components/inicio/carrusel_inicio.dart';
 import 'package:s_inventory/components/inicio/accesos_rapidos.dart';
 import 'package:s_inventory/pages/registrar_ventas.dart';

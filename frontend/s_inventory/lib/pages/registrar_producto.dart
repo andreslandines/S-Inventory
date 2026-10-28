@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:s_inventory/components/formulario.dart';
+import 'package:s_inventory/components/producto/formulario.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/services/producto_service.dart';
 

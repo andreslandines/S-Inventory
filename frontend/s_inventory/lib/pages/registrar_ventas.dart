@@ -5,6 +5,12 @@ import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/services/ventas_servicios.dart';
 
+import 'package:s_inventory/components/ventas/buscador_venta.dart';
+import 'package:s_inventory/components/ventas/producto_venta_card.dart';
+import 'package:s_inventory/components/ventas/carrito_venta.dart';
+import 'package:s_inventory/components/ventas/resumen_venta.dart';
+import 'package:s_inventory/components/ventas/estado_venta.dart';
+
 class RegistrarVenta extends StatefulWidget {
   const RegistrarVenta({super.key});
 
@@ -15,6 +21,7 @@ class RegistrarVenta extends StatefulWidget {
 class _RegistrarVentaState extends State<RegistrarVenta> {
   final _productoService = ProductoService();
   final _ventaService = VentaService();
+  final _buscador = TextEditingController();
 
   List<Map<String, dynamic>> _productos = [];
   final Map<String, Map<String, dynamic>> _carrito = {};
@@ -22,6 +29,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
   bool _cargando = true;
   bool _guardando = false;
   String? _error;
+  String _busqueda = '';
 
   @override
   void initState() {
@@ -29,7 +37,18 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     _cargarProductos();
   }
 
+  @override
+  void dispose() {
+    _buscador.dispose();
+    super.dispose();
+  }
+
   Future<void> _cargarProductos() async {
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+
     try {
       final datos = await _productoService.obtenerProductos();
       if (!mounted) return;
@@ -40,6 +59,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
       });
     } catch (e) {
       if (!mounted) return;
+
       setState(() {
         _error = e.toString();
         _cargando = false;
@@ -47,21 +67,46 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     }
   }
 
+  List<Map<String, dynamic>> get _filtrados {
+    final texto = _busqueda.trim().toLowerCase();
+
+    return _productos.where((producto) {
+      return (producto['nombre']?.toString() ?? '')
+          .toLowerCase()
+          .contains(texto);
+    }).toList();
+  }
+
   double get _total => _carrito.values.fold<double>(
         0,
         (suma, item) =>
             suma +
-            (double.tryParse(item['precio'].toString()) ?? 0) *
+            (double.tryParse('${item['precio']}') ?? 0) *
                 (item['cantidad'] as int),
       );
 
-  void _mensaje(String texto) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texto)),
-    );
+  int get _unidades => _carrito.values.fold<int>(
+        0,
+        (suma, item) => suma + (item['cantidad'] as int),
+      );
+
+  String _dinero(num valor) {
+    return '\$${valor.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (m) => '.',
+    )}';
   }
 
-  String _dinero(num valor) => '\$${valor.toStringAsFixed(0)}';
+  void _mensaje(String texto) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texto),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   void _agregar(Map<String, dynamic> producto) {
     final id = producto['id_productos']?.toString();
@@ -71,7 +116,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     final cantidad = _carrito[id]?['cantidad'] as int? ?? 0;
 
     if (cantidad >= stock) {
-      _mensaje('No hay suficiente stock.');
+      _mensaje('No hay suficiente stock disponible.');
       return;
     }
 
@@ -104,20 +149,21 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
   Future<void> _guardarVenta() async {
     if (_carrito.isEmpty || _guardando) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    final idUsuario = prefs.getString('id_usuario');
-
-    if (idUsuario == null || idUsuario.isEmpty) {
-      _mensaje('No se encontró el ID del usuario. Inicia sesión nuevamente.');
-      return;
-    }
-
     setState(() => _guardando = true);
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final idUsuario = prefs.getString('id_usuario');
+
+      if (idUsuario == null || idUsuario.isEmpty) {
+        _mensaje('Inicia sesión nuevamente para registrar la venta.');
+        return;
+      }
+
       final productos = _carrito.entries.map((entrada) {
         return {
-          'id_productos': int.tryParse(entrada.key) ?? entrada.key,
+          'id_productos':
+              int.tryParse(entrada.key) ?? entrada.key,
           'cantidad': entrada.value['cantidad'],
         };
       }).toList();
@@ -128,15 +174,13 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
       );
 
       if (!mounted) return;
-
       Navigator.pop(context, true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Venta registrada correctamente.')),
-      );
     } catch (e) {
-      _mensaje(e.toString());
+      _mensaje('No se pudo registrar la venta: $e');
     } finally {
-      if (mounted) setState(() => _guardando = false);
+      if (mounted) {
+        setState(() => _guardando = false);
+      }
     }
   }
 
@@ -146,179 +190,159 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
       backgroundColor: AppColors.fondo,
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
-        foregroundColor: Colors.white,
-        title: const Text('Registrar venta'),
-      ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      _error!,
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                  ),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    const Text(
-                      'Selecciona los productos vendidos',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Agrega productos y ajusta sus cantidades.',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    const SizedBox(height: 16),
-                    ..._productos.map(_tarjetaProducto),
-                    if (_carrito.isNotEmpty) ...[
-                      const SizedBox(height: 18),
-                      const Text(
-                        'Tu venta',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      ..._carrito.entries.map(_lineaCarrito),
-                    ],
-                    const SizedBox(height: 20),
-                  ],
-                ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.all(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: AppColors.fondoComponentes,
-            borderRadius: BorderRadius.circular(16),
+        foregroundColor: AppColors.textoPrincipal,
+        elevation: 0,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Registrar venta',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 19,
+              ),
+            ),
+            Text(
+              'Gestiona tus ventas',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white60,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Actualizar productos',
+            onPressed: _cargando ? null : _cargarProductos,
+            icon: const Icon(Icons.refresh_rounded),
           ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: _construirCuerpo(),
+      bottomNavigationBar:
+          _cargando || _error != null || _productos.isEmpty
+              ? null
+              : ResumenVenta(
+                  totalFormateado: _dinero(_total),
+                  guardando: _guardando,
+                  carritoVacio: _carrito.isEmpty,
+                  onConfirmar: _guardarVenta,
+                ),
+    );
+  }
+
+  Widget _construirCuerpo() {
+    if (_cargando) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.accent,
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return EstadoVenta(
+        icono: Icons.cloud_off_rounded,
+        titulo: 'No se pudieron cargar los productos',
+        descripcion:
+            'Comprueba tu conexión e inténtalo nuevamente.',
+        onReintentar: _cargarProductos,
+      );
+    }
+
+    if (_productos.isEmpty) {
+      return const EstadoVenta(
+        icono: Icons.inventory_2_outlined,
+        titulo: 'Tu inventario está vacío',
+        descripcion:
+            'Registra productos antes de crear una venta.',
+      );
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: BuscadorVenta(
+            controller: _buscador,
+            busqueda: _busqueda,
+            onChanged: (valor) {
+              setState(() => _busqueda = valor);
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Row(
             children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Total',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    Text(
-                      _dinero(_total),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              const Icon(
+                Icons.inventory_2_outlined,
+                color: AppColors.secondary,
+                size: 19,
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Productos disponibles',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: _carrito.isEmpty || _guardando
-                    ? null
-                    : _guardarVenta,
-                icon: _guardando
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check_circle_outline),
-                label: Text(_guardando ? 'Guardando...' : 'Confirmar venta'),
+              Text(
+                '${_filtrados.length} productos',
+                style: const TextStyle(
+                  color: AppColors.textoSecundario,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _tarjetaProducto(Map<String, dynamic> producto) {
-    final imagen = producto['imagen']?.toString() ?? '';
-    final stock = int.tryParse('${producto['stock']}') ?? 0;
-
-    return Card(
-      color: AppColors.fondoComponentes,
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: imagen.isEmpty
-              ? const Icon(Icons.inventory_2, color: Colors.white70)
-              : Image.network(
-                  imagen,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.inventory_2,
-                    color: Colors.white70,
+        const SizedBox(height: 10),
+        Expanded(
+          child: _filtrados.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No se encontraron productos.',
+                    style: TextStyle(color: Colors.white60),
                   ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                  itemCount: _filtrados.length,
+                  itemBuilder: (context, index) {
+                    final producto = _filtrados[index];
+                    final id =
+                        producto['id_productos']?.toString() ?? '';
+                    final cantidad =
+                        _carrito[id]?['cantidad'] as int? ?? 0;
+                    final precio =
+                        double.tryParse('${producto['precio']}') ?? 0;
+
+                    return ProductoVentaCard(
+                      producto: producto,
+                      cantidad: cantidad,
+                      precioFormateado: _dinero(precio),
+                      onAgregar: () => _agregar(producto),
+                      onCambiarCantidad: (cambio) {
+                        _cambiarCantidad(id, cambio);
+                      },
+                    );
+                  },
                 ),
         ),
-        title: Text(
-          '${producto['nombre'] ?? 'Producto'}',
-          style: const TextStyle(color: Colors.white),
-        ),
-        subtitle: Text(
-          '${_dinero(double.tryParse('${producto['precio']}') ?? 0)} · Stock: $stock',
-          style: const TextStyle(color: Colors.white70),
-        ),
-        trailing: IconButton(
-          onPressed: stock > 0 ? () => _agregar(producto) : null,
-          icon: const Icon(
-            Icons.add_circle,
-            color: AppColors.secondary,
+        if (_carrito.isNotEmpty)
+          CarritoVenta(
+            unidades: _unidades,
+            cantidadProductos: _carrito.length,
+            totalFormateado: _dinero(_total),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _lineaCarrito(
-    MapEntry<String, Map<String, dynamic>> entrada,
-  ) {
-    final item = entrada.value;
-    final cantidad = item['cantidad'] as int;
-    final precio = double.tryParse('${item['precio']}') ?? 0;
-
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${item['nombre']}\n${_dinero(precio * cantidad)}',
-              style: const TextStyle(color: Colors.white, height: 1.5),
-            ),
-          ),
-          IconButton(
-            onPressed: () => _cambiarCantidad(entrada.key, -1),
-            icon: const Icon(Icons.remove_circle_outline, color: Colors.white),
-          ),
-          Text('$cantidad', style: const TextStyle(color: Colors.white)),
-          IconButton(
-            onPressed: () => _cambiarCantidad(entrada.key, 1),
-            icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

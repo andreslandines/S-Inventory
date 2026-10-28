@@ -5,8 +5,8 @@ import 'package:s_inventory/pages/home.dart';
 import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/user_service.dart';
-import '../services/notificacion_service.dart';
+import '../../services/user_service.dart';
+import '../../services/notificacion_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

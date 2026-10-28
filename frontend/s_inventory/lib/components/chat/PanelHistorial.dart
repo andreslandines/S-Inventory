@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/chat_boxia.dart';
-import 'package:s_inventory/components/ChatBoxiaStorage.dart';
-import '../utils/fechas.dart';
+import '../../models/chat_boxia.dart';
+import 'package:s_inventory/components/chat/ChatBoxiaStorage.dart';
+import '../../utils/fechas.dart';
 
 class PanelHistorial extends StatefulWidget {
   final void Function(ChatBoxia) onAbrir;

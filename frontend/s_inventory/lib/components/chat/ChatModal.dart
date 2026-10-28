@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/components/chat/ChatBoxIABurbuja.dart';
 import 'package:s_inventory/components/chat/ChatHeader.dart';
-import 'package:s_inventory/components/ChatBoxiaStorage.dart';
+import 'package:s_inventory/components/chat/ChatBoxiaStorage.dart';
 import 'package:s_inventory/components/chat/ChatInputField.dart';
 import 'package:s_inventory/models/chat_boxia.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/chatboxiaservice.dart';
+import '../../services/chatboxiaservice.dart';
 
 class ChatBoxiaModal extends StatefulWidget {
   final bool pantallaCompleta;

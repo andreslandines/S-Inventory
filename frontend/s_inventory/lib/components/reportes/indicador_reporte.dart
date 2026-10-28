@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 
@@ -20,52 +21,58 @@ class IndicadorReporte extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.045),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withOpacity(0.09),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(9),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.17),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icono, color: color, size: 23),
+          Row(
+            children: [
+              Icon(icono, color: color, size: 21),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  titulo,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 13),
-          Text(
-            titulo,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 9),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
               valor,
+              maxLines: 1,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 23,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 3),
           Text(
             descripcion,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white54,
-              fontSize: 11,
+              fontSize: 10,
             ),
           ),
         ],

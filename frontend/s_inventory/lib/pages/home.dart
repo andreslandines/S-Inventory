@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:s_inventory/components/app_bar_home.dart';
-import 'package:s_inventory/components/bottom_navigation.dart';
-import 'package:s_inventory/components/perfil_dialog.dart';
-import 'package:s_inventory/components/login.dart';
+import 'package:s_inventory/components/inicio/app_bar_home.dart';
+import 'package:s_inventory/components/inicio/bottom_navigation.dart';
+import 'package:s_inventory/components/inicio/perfil_dialog.dart';
+import 'package:s_inventory/components/inicio/login.dart';
 import 'package:s_inventory/core/colores.dart';
 
 import 'package:s_inventory/pages/home1.dart';

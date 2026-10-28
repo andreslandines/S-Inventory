@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:s_inventory/components/login.dart';
+import 'package:s_inventory/components/inicio/login.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import '../services/user_service.dart';
