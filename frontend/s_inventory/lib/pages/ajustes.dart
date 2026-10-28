@@ -118,7 +118,6 @@ class _AjustesState extends State<Ajustes> {
           ),
           const SizedBox(height: 8),
           const OpcionConToggle1(),
-          const OpcionConToggle2(),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
