@@ -22,7 +22,6 @@ class DispositivoFcmService {
       final url = Uri.parse(
         '${ApiConfig.baseUrl}/notificaciones/token',
       );
-
       final respuesta = await http.post(
         url,
         headers: {
