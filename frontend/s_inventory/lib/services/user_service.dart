@@ -11,7 +11,7 @@ class UserService {
     String email,
     String contrasena,
   ) async {
-    final url = Uri.parse('${ApiConfig.authUrl}/login');
+    final url = Uri.parse('${ApiConfig.authBaseUrl}/login');
 
     try {
       final response = await http.post(
@@ -42,7 +42,7 @@ class UserService {
   // Enviar código de recuperación al correo.
   Future<Map<String, dynamic>> enviarCodigo(String email) async {
     final correo = email.trim();
-    final url = Uri.parse('${ApiConfig.authUrl}/forgot-password');
+    final url = Uri.parse('${ApiConfig.authBaseUrl}/forgot-password');
 
     if (correo.isEmpty) {
       throw Exception('Ingresa tu correo electrónico.');
@@ -94,7 +94,7 @@ class UserService {
     String email,
     String codigo,
   ) async {
-    final url = Uri.parse('${ApiConfig.authUrl}/validate-code');
+    final url = Uri.parse('${ApiConfig.authBaseUrl}/validate-code');
 
     try {
       final response = await http.post(
@@ -128,7 +128,7 @@ class UserService {
     String codigo,
     String newPasswords,
   ) async {
-    final url = Uri.parse('${ApiConfig.authUrl}/verify-code');
+    final url = Uri.parse('${ApiConfig.authBaseUrl}/verify-code');
 
     try {
       final response = await http.post(
