@@ -1,12 +1,18 @@
+
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiConfig {
+  // Utilizar el backend desplegado en Render.
   static const bool useRemote = true;
 
-  // URL del backend desplegado en Render.
+  // Backend de producción.
   static const String _remoteUrl =
       'https://s-inventory.onrender.com';
+
+  // Servidor local para futuras pruebas.
+  static const String _localUrl =
+      'http://192.168.1.172:3000';
 
   static String get baseUrl {
     if (useRemote) {
@@ -17,15 +23,11 @@ class ApiConfig {
       return 'http://localhost:3000';
     }
 
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
+    if (Platform.isAndroid || Platform.isIOS) {
+      return _localUrl;
     }
 
-    if (Platform.isIOS) {
-      return 'http://localhost:3000';
-    }
-
-    return 'http://localhost:3000';
+    return _localUrl;
   }
 
   static String get authUrl => '$baseUrl/auth';

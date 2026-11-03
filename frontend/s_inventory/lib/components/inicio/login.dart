@@ -192,105 +192,141 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.fondo,
-      body: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.all(30),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.fondo,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: AppColors.fondo,
+    resizeToAvoidBottomInset: false,
+    body: SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ClipOval(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
+              child: Container(
+                margin: const EdgeInsets.all(30),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.fondo,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text('S-Inventory', style: Estilotextos.Titulos),
-              Text(
-                'Gestion inteligente de inventario',
-                style: Estilotextos.textoSecundario,
-              ),
-              const SizedBox(height: 30),
-              _campo('Correo Electrónico', _emailController),
-              const SizedBox(height: 30),
-              _campo(
-                'Contraseña',
-                _contrasenaController,
-                contrasena: true,
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const Recoverypassword(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipOval(
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
                       ),
-                    );
-                  },
-                  child: const Text(
-                    '¿Has olvidado tu contraseña?',
-                    style: Estilotextos.textoOlvidasteContrasena,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.fondo,
-                  disabledBackgroundColor: Colors.white,
-                  disabledForegroundColor: AppColors.fondo,
-                  elevation: 4,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 15,
-                    horizontal: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: _isLoading ? null : _iniciarSesion,
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'Iniciar sesión',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'S-Inventory',
+                      style: Estilotextos.Titulos,
+                    ),
+                    Text(
+                      'Gestion inteligente de inventario',
+                      style: Estilotextos.textoSecundario,
+                    ),
+                    const SizedBox(height: 30),
+
+                    _campo(
+                      'Correo Electrónico',
+                      _emailController,
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    _campo(
+                      'Contraseña',
+                      _contrasenaController,
+                      contrasena: true,
+                    ),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const Recoverypassword(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          '¿Has olvidado tu contraseña?',
+                          style: Estilotextos
+                              .textoOlvidasteContrasena,
                         ),
                       ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.fondo,
+                          disabledBackgroundColor: Colors.white,
+                          disabledForegroundColor:
+                              AppColors.fondo,
+                          elevation: 4,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed:
+                            _isLoading ? null : _iniciarSesion,
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 30,
+                                height: 30,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Iniciar sesión',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
-    );
-  }
+    ),
+  );
+}
 }
