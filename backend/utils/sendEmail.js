@@ -1,4 +1,3 @@
-
 import { BrevoClient } from '@getbrevo/brevo';
 
 const apiKey = process.env.BREVO_API_KEY;
