@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/components/ventas/recibo_venta_dialog.dart';
 
+enum PeriodoVentas {
+  estaSemana,
+  semanaPasada,
+  ultimoMes,
+}
+
 class ListaVentasRecientes extends StatefulWidget {
   final List<Map<String, dynamic>> ventas;
   final String Function(num) formatearDinero;
@@ -19,10 +25,7 @@ class ListaVentasRecientes extends StatefulWidget {
 }
 
 class _ListaVentasRecientesState extends State<ListaVentasRecientes> {
-  final TextEditingController _busquedaController =
-      TextEditingController();
-
-  String _busqueda = '';
+  PeriodoVentas _periodoSeleccionado = PeriodoVentas.semanaPasada;
 
   DateTime? _obtenerFecha(dynamic valor) {
     final fecha = DateTime.tryParse(valor?.toString() ?? '');
@@ -73,10 +76,8 @@ class _ListaVentasRecientesState extends State<ListaVentasRecientes> {
     final resultado = [...lista];
 
     resultado.sort((a, b) {
-      final fechaA =
-          _obtenerFecha(a['fecha']) ?? DateTime(2000);
-      final fechaB =
-          _obtenerFecha(b['fecha']) ?? DateTime(2000);
+      final fechaA = _obtenerFecha(a['fecha']) ?? DateTime(2000);
+      final fechaB = _obtenerFecha(b['fecha']) ?? DateTime(2000);
 
       return fechaB.compareTo(fechaA);
     });
@@ -201,43 +202,111 @@ class _ListaVentasRecientesState extends State<ListaVentasRecientes> {
     );
   }
 
+  Widget _opcionPeriodo(
+    String titulo,
+    IconData icono,
+    PeriodoVentas periodo,
+  ) {
+    final seleccionado = _periodoSeleccionado == periodo;
+
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          setState(() {
+            _periodoSeleccionado = periodo;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 5,
+          ),
+          decoration: BoxDecoration(
+            color: seleccionado
+                ? AppColors.secondary.withOpacity(0.20)
+                : AppColors.fondoComponentes,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: seleccionado
+                  ? AppColors.accent
+                  : Colors.white.withOpacity(0.08),
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icono,
+                size: 19,
+                color: seleccionado
+                    ? AppColors.accent
+                    : Colors.white60,
+              ),
+              const SizedBox(height: 5),
+              Text(
+                titulo,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: seleccionado
+                      ? Colors.white
+                      : Colors.white70,
+                  fontSize: 10,
+                  fontWeight: seleccionado
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ahora = DateTime.now();
-    final inicio = _inicioSemana(ahora);
-    final fin = inicio.add(const Duration(days: 7));
+    final inicioSemana = _inicioSemana(ahora);
+    final finSemana = inicioSemana.add(const Duration(days: 7));
+
+    final inicioSemanaPasada =
+        inicioSemana.subtract(const Duration(days: 7));
+
+    final inicioUltimos30Dias =
+        DateTime(ahora.year, ahora.month, ahora.day)
+            .subtract(const Duration(days: 29));
 
     final ventasOrdenadas = _ordenar(widget.ventas);
 
-    // Ventas comprendidas entre lunes y domingo.
+    // Ventas de la semana actual.
     final ventasSemana = ventasOrdenadas.where((venta) {
       final fecha = _obtenerFecha(venta['fecha']);
 
       return fecha != null &&
-          !fecha.isBefore(inicio) &&
-          fecha.isBefore(fin);
+          !fecha.isBefore(inicioSemana) &&
+          fecha.isBefore(finSemana);
     }).take(8).toList();
 
-    // Ventas anteriores al inicio de la semana actual.
-    final historial = ventasOrdenadas.where((venta) {
+    // Ventas anteriores según el periodo seleccionado.
+    final ventasAnteriores = ventasOrdenadas.where((venta) {
       final fecha = _obtenerFecha(venta['fecha']);
-      return fecha != null && fecha.isBefore(inicio);
-    }).toList();
 
-    // Búsqueda por número de venta o fecha.
-    final consulta = _busqueda.trim().toLowerCase();
+      if (fecha == null) return false;
 
-    final resultadosHistorial = historial.where((venta) {
-      if (consulta.isEmpty) return false;
+      switch (_periodoSeleccionado) {
+        case PeriodoVentas.estaSemana:
+          return !fecha.isBefore(inicioSemana) &&
+              fecha.isBefore(finSemana);
 
-      final id = venta['id_venta']?.toString().toLowerCase() ?? '';
-      final fecha = _fecha(venta['fecha']).toLowerCase();
-      final fechaOriginal =
-          venta['fecha']?.toString().toLowerCase() ?? '';
+        case PeriodoVentas.semanaPasada:
+          return !fecha.isBefore(inicioSemanaPasada) &&
+              fecha.isBefore(inicioSemana);
 
-      return id.contains(consulta) ||
-          fecha.contains(consulta) ||
-          fechaOriginal.contains(consulta);
+        case PeriodoVentas.ultimoMes:
+          return !fecha.isBefore(inicioUltimos30Dias) &&
+              fecha.isBefore(ahora.add(const Duration(seconds: 1)));
+      }
     }).toList();
 
     return Container(
@@ -252,15 +321,15 @@ class _ListaVentasRecientesState extends State<ListaVentasRecientes> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // VENTAS DE LA SEMANA
+          // VENTAS DE ESTA SEMANA
           _tituloSeccion(
-            'Ventas de esta semana',
+            'Ventas recientes',
             Icons.calendar_view_week_rounded,
           ),
           const SizedBox(height: 5),
           Text(
-            '${_fecha(inicio.toIso8601String())} - '
-            '${_fecha(fin.subtract(const Duration(days: 1)).toIso8601String())}',
+            '${_fecha(inicioSemana.toIso8601String())} - '
+            '${_fecha(finSemana.subtract(const Duration(days: 1)).toIso8601String())}',
             style: const TextStyle(
               color: Colors.white54,
               fontSize: 10,
@@ -281,101 +350,54 @@ class _ListaVentasRecientesState extends State<ListaVentasRecientes> {
 
           // HISTORIAL
           _tituloSeccion(
-            'Historial de ventas',
+            'Consultar ventas anteriores',
             Icons.history_rounded,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          TextField(
-            controller: _busquedaController,
-            onChanged: (valor) {
-              setState(() => _busqueda = valor);
-            },
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Buscar por número o fecha...',
-              hintStyle: const TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
+          Row(
+            children: [
+              _opcionPeriodo(
+                'Esta semana',
+                Icons.calendar_today_rounded,
+                PeriodoVentas.estaSemana,
               ),
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-                color: AppColors.secondary,
-                size: 20,
+              const SizedBox(width: 7),
+              _opcionPeriodo(
+                'Semana pasada',
+                Icons.calendar_view_week_rounded,
+                PeriodoVentas.semanaPasada,
               ),
-              suffixIcon: _busqueda.isNotEmpty
-                  ? IconButton(
-                      onPressed: () {
-                        _busquedaController.clear();
-                        setState(() => _busqueda = '');
-                      },
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white60,
-                        size: 18,
-                      ),
-                    )
-                  : null,
-              filled: true,
-              fillColor: AppColors.fondoComponentes,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
+              const SizedBox(width: 7),
+              _opcionPeriodo(
+                'Último mes',
+                Icons.calendar_month_rounded,
+                PeriodoVentas.ultimoMes,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: Colors.white.withOpacity(0.08),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.secondary,
-                ),
-              ),
-            ),
+            ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          if (historial.isEmpty)
-            _mensaje('Todavía no hay ventas de semanas anteriores.')
-          else if (consulta.isEmpty)
-            _mensaje(
-              'Escribe un número de venta o una fecha para '
-              'consultar las ventas anteriores.',
-            )
-          else if (resultadosHistorial.isEmpty)
-            _mensaje('No se encontraron ventas con esa búsqueda.')
-          else ...[
-            Text(
-              '${resultadosHistorial.length} venta(s) encontrada(s)',
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 10,
-              ),
+          Text(
+            '${ventasAnteriores.length} venta(s) encontradas',
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 10,
             ),
-            const SizedBox(height: 8),
-            ...resultadosHistorial.map(
+          ),
+          const SizedBox(height: 8),
+
+          if (ventasAnteriores.isEmpty)
+            _mensaje(
+              'No hay ventas registradas en este periodo.',
+            )
+          else
+            ...ventasAnteriores.map(
               (venta) => _tarjetaVenta(context, venta),
             ),
-          ],
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _busquedaController.dispose();
-    super.dispose();
   }
 }

@@ -8,31 +8,252 @@ import 'producto_imagen.dart';
 
 class FormularioProducto {
 static const Map<String, List<String>> categorias = {
-  'Aseo y limpieza': ['Otro'],
-  'Cuidado personal y belleza': ['Otro'],
-  'Higiene femenina': ['Otro'],
-  'Bebés y maternidad': ['Otro'],
-  'Frutas, verduras y tubérculos': ['Otro'],
-  'Alimentos y abarrotes': ['Otro'],
-  'Enlatados y conservas': ['Otro'],
-  'Lácteos y derivados': ['Otro'],
-  'Bebidas': ['Otro'],
-  'Helados y congelados': ['Otro'],
-  'Panadería y comidas preparadas': ['Otro'],
-  'Dulces, galletas y snacks': ['Otro'],
-  'Salsas y condimentos': ['Otro'],
-  'Ropa y calzado': ['Otro'],
-  'Accesorios y bisutería': ['Otro'],
-  'Papelería y útiles escolares': ['Otro'],
-  'Manualidades y costura': ['Otro'],
-  'Ferretería y plomería': ['Otro'],
-  'Electricidad e iluminación': ['Otro'],
-  'Droguería y primeros auxilios': ['Otro'],
-  'Cigarrillos y encendedores': ['Otro'],
-  'Hogar, desechables y empaques': ['Otro'],
-  'Mascotas': ['Otro'],
-  'Velas y artículos para fiestas': ['Otro'],
-  'Otros': ['Otro'],
+  'Frutas, verduras y tubérculos': [
+    'Papa',
+    'Papa amarilla',
+    'Cebolla cabezona',
+    'Cebolla larga',
+    'Tomate',
+    'Zanahoria',
+    'Ajo',
+    'Otro',
+  ],
+
+  'Abarrotes y despensa': [
+    'Arroz',
+    'Pasta',
+    'Macarrones',
+    'Maíz en bolsa',
+    'Avena',
+    'Café',
+    'Chocolate',
+    'Panela',
+    'Sal',
+    'Azúcar',
+    'Aceite',
+    'Manteca',
+    'Maicena',
+    'Levadura',
+    'Polvo para hornear',
+    'Otro',
+  ],
+
+  'Enlatados y conservas': [
+    'Sardinas en lata',
+    'Atún en lata',
+    'Salchichas en lata',
+    'Maíz en lata',
+    'Otro',
+  ],
+
+  'Lácteos y derivados': [
+    'Crema de leche',
+    'Mantequilla',
+    'Leche condensada',
+    'Leche',
+    'Otro',
+  ],
+
+  'Bebidas': [
+    'Gaseosas',
+    'Electrolitos',
+    'Frutiño',
+    'Avena en bolsa',
+    'Vaso de guarapo',
+    'Otro',
+  ],
+
+  'Helados y congelados': [
+    'Bolis',
+    'Bonais',
+    'Hielo en bolsa',
+    'Otro',
+  ],
+
+  'Panadería y comidas preparadas': [
+    'Pan',
+    'Empanadas',
+    'Chocorramo',
+    'Otro',
+  ],
+
+  'Dulces, galletas y snacks': [
+    'Galletas',
+    'Gomitas',
+    'Chicles',
+    'Chupetes',
+    'Dulces',
+    'Chocolatinas',
+    'Papas de paquete',
+    'Otro',
+  ],
+
+  'Salsas y condimentos': [
+    'Salsas',
+    'Sazonador',
+    'Color',
+    'Canela',
+    'Pimienta',
+    'Ajo en polvo',
+    'Maggi',
+    'Ricostilla',
+    'Otro',
+  ],
+
+  'Aseo y limpieza': [
+    'Detergente',
+    'Suavizante',
+    'Jabón para ropa',
+    'Lavaloza',
+    'Sabra',
+    'Brilladora',
+    'Esponjas',
+    'Bicarbonato',
+    'Desinfectante',
+    'Cloro',
+    'Otro',
+  ],
+
+  'Cuidado personal y belleza': [
+    'Shampoo',
+    'Acondicionador',
+    'Crema para el cabello',
+    'Gel para el cabello',
+    'Desodorante',
+    'Perfume para hombre',
+    'Perfume para mujer',
+    'Bloqueador solar',
+    'Peines para hombre',
+    'Peines para mujer',
+    'Cepillos',
+    'Cuchillas de afeitar',
+    'Otro',
+  ],
+
+  'Higiene femenina': [
+    'Toallas íntimas',
+    'Tampones',
+    'Otro',
+  ],
+
+  'Bebés y maternidad': [
+    'Pañales',
+    'Pañitos húmedos',
+    'Chupetes para tetero',
+    'Colcha para bebé',
+    'Otro',
+  ],
+
+  'Ropa y calzado': [
+    'Ropa para hombre',
+    'Ropa para mujer',
+    'Ropa para niños',
+    'Ropa para niñas',
+    'Zapatos para hombre',
+    'Zapatos para mujer',
+    'Zapatos para niños',
+    'Zapatos para niñas',
+    'Otro',
+  ],
+
+  'Accesorios y bisutería': [
+    'Gomas para el cabello',
+    'Cauchitos',
+    'Caimanes para mujer',
+    'Pinzas para el cabello',
+    'Balacas',
+    'Rubor',
+    'Otro',
+  ],
+
+  'Papelería y útiles escolares': [
+    'Cuadernos',
+    'Cartulina',
+    'Cartulina en pliego',
+    'Bolígrafos',
+    'Lápices',
+    'Marcadores',
+    'Reglas',
+    'Borradores',
+    'Sacapuntas',
+    'Correctores',
+    'Sobres',
+    'Bisturí',
+    'Cinta',
+    'Otro',
+  ],
+
+  'Manualidades y costura': [
+    'Escarcha',
+    'Colbón',
+    'Temperas',
+    'Plastilina',
+    'Crayones',
+    'Hilos de coser',
+    'Papel seda',
+    'Papel crepé',
+    'Foami',
+    'Velas volcán',
+    'Otro',
+  ],
+
+  'Ferretería y plomería': [
+    'Llaves para el agua',
+    'Cinta de teflón',
+    'Tubos para agua',
+    'Chazos',
+    'Tornillos',
+    'Otro',
+  ],
+
+  'Electricidad e iluminación': [
+    'Bombillos',
+    'Pilas',
+    'Cinta aislante',
+    'Otro',
+  ],
+
+  'Droguería y primeros auxilios': [
+    'Alcohol antiséptico',
+    'Curitas',
+    'Tapabocas',
+    'Medicamentos de venta libre',
+    'Otro',
+  ],
+
+  'Cigarrillos y encendedores': [
+    'Cigarrillos',
+    'Mecheras',
+    'Otro',
+  ],
+
+  'Hogar, desechables y empaques': [
+    'Bolsas plásticas',
+    'Bolsas de regalo',
+    'Vasos desechables',
+    'Servilletas',
+    'Palillos',
+    'Papel aluminio',
+    'Plásticos',
+    'Otro',
+  ],
+
+  'Mascotas': [
+    'Purina para perros',
+    'Purina para gatos',
+    'Otro',
+  ],
+
+  'Velas y artículos para fiestas': [
+    'Velas',
+    'Velas volcán',
+    'Sobres',
+    'Otro',
+  ],
+
+  'Otros': [
+    'Otro',
+  ],
 };
 
   static Future<Map<String, dynamic>?> mostrar(

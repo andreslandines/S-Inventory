@@ -70,47 +70,52 @@ class _InventarioState extends State<Inventario> {
     }
   }
 
-  Future<void> _editar(Map<String, dynamic> producto) async {
-    final id = producto['id_productos']?.toString();
+  
+Future<void> _editar(Map<String, dynamic> producto) async {
+  final id = producto['id_productos']?.toString();
 
-    if (id == null || id.isEmpty) {
-      _mensaje('No se encontró el ID del producto.', error: true);
-      return;
-    }
+  if (id == null || id.isEmpty) {
+    _mensaje('No se encontró el ID del producto.', error: true);
+    return;
+  }
 
-    final datos = await FormularioEditarProducto.mostrar(
-      context,
-      producto,
+  final datos = await FormularioEditarProducto.mostrar(
+    context,
+    producto,
+  );
+
+  if (datos == null || !mounted) return;
+
+  setState(() => _procesando = true);
+
+  try {
+    await _service.actualizarProducto(
+      id: id,
+      nombre: datos['nombre']!,
+      descripcion: datos['descripcion']!,
+      precio: datos['precio']!,
+      categoria: datos['categoria']!,
+      stock: datos['stock']!,
+      imagenArchivo: datos['imagenArchivo'],
     );
 
-    if (datos == null || !mounted) return;
+    if (!mounted) return;
 
-    setState(() => _procesando = true);
-
-    try {
-      await _service.actualizarProducto(
-        id: id,
-        nombre: datos['nombre']!,
-        descripcion: datos['descripcion']!,
-        precio: datos['precio']!,
-        categoria: datos['categoria']!,
-        stock: datos['stock']!,
+    _mensaje('Producto actualizado correctamente.');
+    await _cargarProductos();
+  } catch (e) {
+    if (mounted) {
+      _mensaje(
+        e.toString().replaceFirst('Exception: ', ''),
+        error: true,
       );
-
-      if (!mounted) return;
-      _mensaje('Producto actualizado correctamente.');
-      await _cargarProductos();
-    } catch (e) {
-      if (mounted) {
-        _mensaje(
-          e.toString().replaceFirst('Exception: ', ''),
-          error: true,
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _procesando = false);
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _procesando = false);
     }
   }
+}
 
   Future<void> _eliminar(Map<String, dynamic> producto) async {
     final id = producto['id_productos']?.toString();

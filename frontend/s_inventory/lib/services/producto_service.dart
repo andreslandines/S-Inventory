@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'api_config.dart';
 
@@ -91,36 +92,22 @@ class ProductoService {
     final respuesta = await solicitud.send();
     final cuerpo = await respuesta.stream.bytesToString();
 
-    Map<String, dynamic> datos = {};
-
-    if (cuerpo.isNotEmpty) {
-      try {
-        final decoded = jsonDecode(cuerpo);
-
-        if (decoded is Map<String, dynamic>) {
-          datos = decoded;
-        }
-      } catch (_) {
-        throw Exception(
-          'El servidor devolvió una respuesta no válida.',
-        );
-      }
-    }
+    final datos = _decodificarRespuesta(cuerpo);
 
     if (respuesta.statusCode == 200 ||
         respuesta.statusCode == 201) {
       return datos;
     }
 
-    final mensaje = datos['error'] ??
-        datos['message'] ??
-        'No se pudo registrar el producto '
-            '(código ${respuesta.statusCode}).';
-
-    throw Exception(mensaje.toString());
+    throw Exception(
+      datos['error'] ??
+          datos['message'] ??
+          'No se pudo registrar el producto '
+              '(código ${respuesta.statusCode}).',
+    );
   }
 
-  
+  // ACTUALIZAR PRODUCTO E IMAGEN
   Future<void> actualizarProducto({
     required String id,
     required String nombre,
@@ -128,6 +115,7 @@ class ProductoService {
     required String precio,
     required String categoria,
     required String stock,
+    XFile? imagenArchivo,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
@@ -140,89 +128,126 @@ class ProductoService {
       '${ApiConfig.baseUrl}/pro/productoseditar/$id',
     );
 
-    final respuesta = await http.put(
+    final solicitud = http.MultipartRequest('PUT', url);
+
+    solicitud.headers.addAll({
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    });
+
+    solicitud.fields.addAll({
+      'nombre': nombre.trim(),
+      'descripcion': descripcion.trim(),
+      'precio': double.parse(
+        precio.replaceAll(',', '.'),
+      ).toString(),
+      'categoria': categoria.trim(),
+      'stock': int.parse(stock).toString(),
+    });
+
+    // Solo se adjunta la imagen cuando el usuario selecciona otra.
+    if (imagenArchivo != null) {
+      final bytes = await imagenArchivo.readAsBytes();
+
+      if (bytes.isEmpty) {
+        throw Exception('La imagen seleccionada está vacía.');
+      }
+
+      solicitud.files.add(
+        http.MultipartFile.fromBytes(
+          'imagen',
+          bytes,
+          filename: imagenArchivo.name,
+        ),
+      );
+    }
+
+    final respuesta = await solicitud.send();
+    final cuerpo = await respuesta.stream.bytesToString();
+
+    final datos = _decodificarRespuesta(cuerpo);
+
+    if (respuesta.statusCode == 200 ||
+        respuesta.statusCode == 201) {
+      return;
+    }
+
+    throw Exception(
+      datos['error'] ??
+          datos['message'] ??
+          'No se pudo actualizar el producto '
+              '(código ${respuesta.statusCode}).',
+    );
+  }
+
+  Future<void> eliminarProducto(String id) async {
+    final idProducto = id.trim();
+
+    if (idProducto.isEmpty || idProducto == 'null') {
+      throw Exception(
+        'El identificador del producto no es válido.',
+      );
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Inicia sesión nuevamente.');
+    }
+
+    final url = Uri.parse(
+      '${ApiConfig.baseUrl}/pro/productoseliminar/$idProducto',
+    );
+
+    final respuesta = await http.delete(
       url,
       headers: {
         'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: jsonEncode({
-        'nombre': nombre.trim(),
-        'descripcion': descripcion.trim(),
-        'precio': double.parse(precio.replaceAll(',', '.')),
-        'categoria': categoria.trim(),
-        'stock': int.parse(stock),
-      }),
     );
 
-    if (respuesta.statusCode != 200) {
-      String mensaje = 'No se pudo actualizar el producto.';
+    if (respuesta.statusCode == 200 ||
+        respuesta.statusCode == 204) {
+      return;
+    }
 
+    String detalle = respuesta.body.trim();
+
+    if (detalle.isNotEmpty) {
       try {
-        final datos = jsonDecode(respuesta.body);
+        final datos = jsonDecode(detalle);
+
         if (datos is Map) {
-          mensaje = datos['error']?.toString() ?? mensaje;
+          detalle = datos['error']?.toString() ??
+              datos['message']?.toString() ??
+              detalle;
         }
       } catch (_) {}
-
-      throw Exception(mensaje);
     }
+
+    throw Exception(
+      'Error al eliminar producto '
+      '(HTTP ${respuesta.statusCode}): $detalle',
+    );
   }
 
-  
-Future<void> eliminarProducto(String id) async {
-  final idProducto = id.trim();
+  Map<String, dynamic> _decodificarRespuesta(String cuerpo) {
+    if (cuerpo.isEmpty) return {};
 
-  if (idProducto.isEmpty || idProducto == 'null') {
-    throw Exception('El identificador del producto no es válido.');
-  }
-
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('jwt_token');
-
-  if (token == null || token.isEmpty) {
-    throw Exception('Inicia sesión nuevamente.');
-  }
-
-  final url = Uri.parse(
-    '${ApiConfig.baseUrl}/pro/productoseliminar/$idProducto',
-  );
-
-  final respuesta = await http.delete(
-    url,
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-    },
-  );
-
-  if (respuesta.statusCode == 200 ||
-      respuesta.statusCode == 204) {
-    return;
-  }
-
-  String detalle = respuesta.body.trim();
-
-  if (detalle.isNotEmpty) {
     try {
-      final datos = jsonDecode(detalle);
+      final decoded = jsonDecode(cuerpo);
 
-      if (datos is Map) {
-        detalle = datos['error']?.toString() ??
-            datos['message']?.toString() ??
-            detalle;
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
       }
+
+      return {};
     } catch (_) {
-      // Conserva el cuerpo original si no es JSON.
+      throw Exception(
+        'El servidor devolvió una respuesta no válida.',
+      );
     }
   }
-
-  throw Exception(
-    'Error al eliminar producto '
-    '(HTTP ${respuesta.statusCode}): $detalle',
-  );
-}
-
-
 }
