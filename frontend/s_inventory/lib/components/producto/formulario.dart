@@ -7,34 +7,33 @@ import 'producto_campos.dart';
 import 'producto_imagen.dart';
 
 class FormularioProducto {
-  static const categorias = {
-    'Aseo y limpieza': [
-      'Detergente', 'Suavizante', 'Jabón para ropa',
-      'Lavaloza', 'Desinfectante', 'Cloro', 'Otro',
-    ],
-    'Cuidado personal': [
-      'Jabón de baño', 'Champú', 'Acondicionador',
-      'Desodorante', 'Crema dental', 'Otro',
-    ],
-    'Alimentos y abarrotes': [
-      'Arroz', 'Pasta', 'Harina', 'Azúcar', 'Sal',
-      'Aceite', 'Granos', 'Enlatados', 'Otro',
-    ],
-    'Bebidas': ['Agua', 'Gaseosa', 'Jugos', 'Café', 'Té', 'Otro'],
-    'Lácteos y huevos': [
-      'Leche', 'Queso', 'Yogur', 'Mantequilla', 'Huevos', 'Otro',
-    ],
-    'Frutas y verduras': ['Frutas', 'Verduras', 'Tubérculos', 'Hierbas', 'Otro'],
-    'Panadería y snacks': [
-      'Pan', 'Galletas', 'Pasteles', 'Papas fritas', 'Dulces', 'Otro',
-    ],
-    'Mascotas': ['Alimento para perros', 'Alimento para gatos', 'Arena sanitaria', 'Otro'],
-    'Bebés': ['Pañales', 'Toallitas húmedas', 'Fórmula infantil', 'Otro'],
-    'Papelería y hogar': [
-      'Cuadernos', 'Lápices', 'Papel', 'Servilletas', 'Papel higiénico', 'Otro',
-    ],
-    'Otros': ['Otro'],
-  };
+static const Map<String, List<String>> categorias = {
+  'Aseo y limpieza': ['Otro'],
+  'Cuidado personal y belleza': ['Otro'],
+  'Higiene femenina': ['Otro'],
+  'Bebés y maternidad': ['Otro'],
+  'Frutas, verduras y tubérculos': ['Otro'],
+  'Alimentos y abarrotes': ['Otro'],
+  'Enlatados y conservas': ['Otro'],
+  'Lácteos y derivados': ['Otro'],
+  'Bebidas': ['Otro'],
+  'Helados y congelados': ['Otro'],
+  'Panadería y comidas preparadas': ['Otro'],
+  'Dulces, galletas y snacks': ['Otro'],
+  'Salsas y condimentos': ['Otro'],
+  'Ropa y calzado': ['Otro'],
+  'Accesorios y bisutería': ['Otro'],
+  'Papelería y útiles escolares': ['Otro'],
+  'Manualidades y costura': ['Otro'],
+  'Ferretería y plomería': ['Otro'],
+  'Electricidad e iluminación': ['Otro'],
+  'Droguería y primeros auxilios': ['Otro'],
+  'Cigarrillos y encendedores': ['Otro'],
+  'Hogar, desechables y empaques': ['Otro'],
+  'Mascotas': ['Otro'],
+  'Velas y artículos para fiestas': ['Otro'],
+  'Otros': ['Otro'],
+};
 
   static Future<Map<String, dynamic>?> mostrar(
     BuildContext context,

@@ -21,9 +21,13 @@ class ProductoVentaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imagen = producto['imagen']?.toString() ?? '';
+    final nombre = producto['nombre']?.toString() ?? 'Producto';
+    final descripcion =
+        producto['descripcion']?.toString().trim() ?? '';
+
     final stock = int.tryParse('${producto['stock']}') ?? 0;
-    final minimo =
-        int.tryParse('${producto['stock_minimo']}') ?? 0;
+    final minimo = int.tryParse('${producto['stock_minimo']}') ?? 0;
+
     final agotado = stock <= 0;
     final stockBajo = !agotado && stock <= minimo;
 
@@ -46,12 +50,13 @@ class ProductoVentaCard extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(13),
             child: Container(
               width: 68,
-              height: 72,
+              height: 78,
               color: AppColors.fondo,
               child: imagen.isEmpty
                   ? const Icon(
@@ -71,12 +76,14 @@ class ProductoVentaCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Nombre
                 Text(
-                  '${producto['nombre'] ?? 'Producto'}',
+                  nombre,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -85,7 +92,25 @@ class ProductoVentaCard extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 6),
+
+                // Descripción visible
+                if (descripcion.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    descripcion,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 7),
+
+                // Precio
                 Text(
                   precioFormateado,
                   style: const TextStyle(
@@ -94,7 +119,10 @@ class ProductoVentaCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 5),
+
+                // Estado del inventario
                 Row(
                   children: [
                     Icon(
@@ -123,7 +151,10 @@ class ProductoVentaCard extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(width: 8),
+
+          // Controles de cantidad
           if (cantidad == 0)
             IconButton.filled(
               onPressed: agotado ? null : onAgregar,
@@ -136,6 +167,7 @@ class ProductoVentaCard extends StatelessWidget {
             )
           else
             Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   visualDensity: VisualDensity.compact,
