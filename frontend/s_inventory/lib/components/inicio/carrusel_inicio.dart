@@ -19,35 +19,38 @@ class _CarruselInicioState extends State<CarruselInicio> {
     {
       'titulo': 'Tu inventario,\nen buenas manos',
       'texto': 'Organiza tus productos y mantén el control.',
-      'imagen':
-          'assets/images/carrusel1.jpeg',
+      'imagen': 'assets/images/carrusel1.jpeg',
     },
     {
       'titulo': 'Controla cada\nmovimiento',
       'texto': 'Registra las ventas y actualiza tus existencias.',
-      'imagen':
-          'assets/images/carrusel2.jpeg',
+      'imagen': 'assets/images/carrusel2.jpeg',
     },
     {
       'titulo': 'Decide con\ninformación',
       'texto': 'Consulta tus reportes y conoce tu negocio.',
-      'imagen':
-          'assets/images/carrusel3.jpeg',
+      'imagen': 'assets/images/carrusel3.jpeg',
     },
   ];
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!_controller.hasClients) return;
-      _pagina = (_pagina + 1) % _diapositivas.length;
-      _controller.animateToPage(
-        _pagina,
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeInOut,
-      );
-    });
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) {
+        if (!_controller.hasClients) return;
+
+        final siguiente = (_pagina + 1) % _diapositivas.length;
+
+        _controller.animateToPage(
+          siguiente,
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeInOut,
+        );
+      },
+    );
   }
 
   @override
@@ -68,26 +71,32 @@ class _CarruselInicioState extends State<CarruselInicio> {
             child: PageView.builder(
               controller: _controller,
               itemCount: _diapositivas.length,
-              onPageChanged: (pagina) =>
-                  setState(() => _pagina = pagina),
+              onPageChanged: (pagina) {
+                setState(() => _pagina = pagina);
+              },
               itemBuilder: (context, index) {
                 final item = _diapositivas[index];
 
                 return Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
+                    // Imagen local desde assets
+                    Image.asset(
                       item['imagen']!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.fondoComponentes,
-                        child: const Icon(
-                          Icons.inventory_2_outlined,
-                          color: Colors.white24,
-                          size: 80,
-                        ),
-                      ),
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: AppColors.fondoComponentes,
+                          child: const Icon(
+                            Icons.image_not_supported_outlined,
+                            color: Colors.white54,
+                            size: 65,
+                          ),
+                        );
+                      },
                     ),
+
+                    // Degradado para mejorar la lectura
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -101,6 +110,8 @@ class _CarruselInicioState extends State<CarruselInicio> {
                         ),
                       ),
                     ),
+
+                    // Texto de la diapositiva
                     Padding(
                       padding: const EdgeInsets.all(22),
                       child: Align(
@@ -139,7 +150,10 @@ class _CarruselInicioState extends State<CarruselInicio> {
             ),
           ),
         ),
+
         const SizedBox(height: 12),
+
+        // Indicadores de páginas
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(_diapositivas.length, (index) {
