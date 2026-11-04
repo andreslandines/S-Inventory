@@ -20,19 +20,19 @@ class _CarruselInicioState extends State<CarruselInicio> {
       'titulo': 'Tu inventario,\nen buenas manos',
       'texto': 'Organiza tus productos y mantén el control.',
       'imagen':
-          'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1000',
+          'assets/images/carrusel1.jpeg',
     },
     {
       'titulo': 'Controla cada\nmovimiento',
       'texto': 'Registra las ventas y actualiza tus existencias.',
       'imagen':
-          'https://images.unsplash.com/photo-1553413077-190dd305871c?w=1000',
+          'assets/images/carrusel2.jpeg',
     },
     {
       'titulo': 'Decide con\ninformación',
       'texto': 'Consulta tus reportes y conoce tu negocio.',
       'imagen':
-          'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1000',
+          'assets/images/carrusel3.jpeg',
     },
   ];
 
@@ -92,8 +92,8 @@ class _CarruselInicioState extends State<CarruselInicio> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.fondo.withOpacity(0.95),
-                            AppColors.fondo.withOpacity(0.55),
+                            AppColors.fondo.withOpacity(0.90),
+                            AppColors.fondo.withOpacity(0.50),
                             Colors.transparent,
                           ],
                           begin: Alignment.centerLeft,
