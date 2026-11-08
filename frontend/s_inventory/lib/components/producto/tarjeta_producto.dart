@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
@@ -28,8 +29,13 @@ class _TarjetaProductoInventarioState
     final producto = widget.producto;
 
     final nombre = producto['nombre']?.toString() ?? 'Sin nombre';
+
+    final descripcion =
+        producto['descripcion']?.toString().trim() ?? '';
+
     final categoriaCompleta =
         producto['categoria']?.toString() ?? '';
+
     final partesCategoria = categoriaCompleta.split(' - ');
     final categoria = partesCategoria.first.trim();
 
@@ -69,7 +75,6 @@ class _TarjetaProductoInventarioState
       ),
       child: Column(
         children: [
-          // Tarjeta compacta: solo muestra el nombre.
           InkWell(
             onTap: () {
               setState(() {
@@ -117,7 +122,6 @@ class _TarjetaProductoInventarioState
             ),
           ),
 
-          // Información que aparece al seleccionar el producto.
           AnimatedSize(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
@@ -187,6 +191,37 @@ class _TarjetaProductoInventarioState
                           ],
                         ),
 
+                        // DESCRIPCIÓN DEL PRODUCTO
+                        if (descripcion.isNotEmpty) ...[
+                          const SizedBox(height: 15),
+                          Text(
+                            'Descripción',
+                            style: Estilotextos.textoSecundario.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.035),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.07),
+                              ),
+                            ),
+                            child: Text(
+                              descripcion,
+                              style: Estilotextos.textoNormal.copyWith(
+                                fontSize: 12,
+                                height: 1.4,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ],
+
                         const SizedBox(height: 16),
 
                         Container(
@@ -254,8 +289,7 @@ class _TarjetaProductoInventarioState
                                   ),
                                   backgroundColor:
                                       Colors.white.withOpacity(0.02),
-                                  splashFactory:
-                                      NoSplash.splashFactory,
+                                  splashFactory: NoSplash.splashFactory,
                                   overlayColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -281,8 +315,7 @@ class _TarjetaProductoInventarioState
                                   ),
                                   backgroundColor:
                                       Colors.white.withOpacity(0.02),
-                                  splashFactory:
-                                      NoSplash.splashFactory,
+                                  splashFactory: NoSplash.splashFactory,
                                   overlayColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),

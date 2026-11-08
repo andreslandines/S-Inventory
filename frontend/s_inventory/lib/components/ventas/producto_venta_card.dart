@@ -1,8 +1,9 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:s_inventory/core/colores.dart';
 
-class ProductoVentaCard extends StatelessWidget {
+class ProductoVentaCard extends StatefulWidget {
   final Map<String, dynamic> producto;
   final int cantidad;
   final String precioFormateado;
@@ -19,14 +20,85 @@ class ProductoVentaCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final imagen = producto['imagen']?.toString() ?? '';
-    final nombre = producto['nombre']?.toString() ?? 'Producto';
-    final descripcion =
-        producto['descripcion']?.toString().trim() ?? '';
+  State<ProductoVentaCard> createState() => _ProductoVentaCardState();
+}
 
-    final stock = int.tryParse('${producto['stock']}') ?? 0;
-    final minimo = int.tryParse('${producto['stock_minimo']}') ?? 0;
+class _ProductoVentaCardState extends State<ProductoVentaCard> {
+  late final TextEditingController _cantidadController;
+  late final FocusNode _cantidadFocus;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _cantidadController = TextEditingController(
+      text: '${widget.cantidad}',
+    );
+
+    _cantidadFocus = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProductoVentaCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.cantidad != widget.cantidad &&
+        !_cantidadFocus.hasFocus) {
+      _cantidadController.text = '${widget.cantidad}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _cantidadController.dispose();
+    _cantidadFocus.dispose();
+    super.dispose();
+  }
+
+  void _actualizarCantidad(String valor) {
+    final nuevaCantidad = int.tryParse(valor);
+    final stock = int.tryParse('${widget.producto['stock']}') ?? 0;
+
+    if (nuevaCantidad == null || nuevaCantidad < 1) {
+      _cantidadController.text = '${widget.cantidad}';
+      return;
+    }
+
+    if (nuevaCantidad > stock) {
+      _cantidadController.text = '${widget.cantidad}';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Solo hay $stock unidades disponibles.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      return;
+    }
+
+    final diferencia = nuevaCantidad - widget.cantidad;
+
+    if (diferencia != 0) {
+      widget.onCambiarCantidad(diferencia);
+    }
+
+    _cantidadController.text = '$nuevaCantidad';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final imagen = widget.producto['imagen']?.toString() ?? '';
+    final nombre = widget.producto['nombre']?.toString() ?? 'Producto';
+
+    final descripcion =
+        widget.producto['descripcion']?.toString().trim() ?? '';
+
+    final stock = int.tryParse('${widget.producto['stock']}') ?? 0;
+    final minimo =
+        int.tryParse('${widget.producto['stock_minimo']}') ?? 0;
 
     final agotado = stock <= 0;
     final stockBajo = !agotado && stock <= minimo;
@@ -44,7 +116,7 @@ class ProductoVentaCard extends StatelessWidget {
         color: AppColors.fondoComponentes,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: cantidad > 0
+          color: widget.cantidad > 0
               ? AppColors.secondary.withOpacity(0.7)
               : AppColors.bordeOscuro,
         ),
@@ -75,13 +147,13 @@ class ProductoVentaCard extends StatelessWidget {
                     ),
             ),
           ),
+
           const SizedBox(width: 12),
 
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nombre
                 Text(
                   nombre,
                   maxLines: 2,
@@ -93,7 +165,6 @@ class ProductoVentaCard extends StatelessWidget {
                   ),
                 ),
 
-                // Descripción visible
                 if (descripcion.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -110,9 +181,8 @@ class ProductoVentaCard extends StatelessWidget {
 
                 const SizedBox(height: 7),
 
-                // Precio
                 Text(
-                  precioFormateado,
+                  widget.precioFormateado,
                   style: const TextStyle(
                     color: AppColors.accent,
                     fontSize: 16,
@@ -122,7 +192,6 @@ class ProductoVentaCard extends StatelessWidget {
 
                 const SizedBox(height: 5),
 
-                // Estado del inventario
                 Row(
                   children: [
                     Icon(
@@ -154,10 +223,9 @@ class ProductoVentaCard extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          // Controles de cantidad
-          if (cantidad == 0)
+          if (widget.cantidad == 0)
             IconButton.filled(
-              onPressed: agotado ? null : onAgregar,
+              onPressed: agotado ? null : widget.onAgregar,
               style: IconButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -171,22 +239,71 @@ class ProductoVentaCard extends StatelessWidget {
               children: [
                 IconButton(
                   visualDensity: VisualDensity.compact,
-                  onPressed: () => onCambiarCantidad(1),
+                  onPressed: widget.cantidad >= stock
+                      ? null
+                      : () => widget.onCambiarCantidad(1),
                   icon: const Icon(
                     Icons.add_circle_rounded,
                     color: AppColors.accent,
                   ),
                 ),
-                Text(
-                  '$cantidad',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+
+                // CANTIDAD EDITABLE CON EL TECLADO
+                SizedBox(
+                  width: 48,
+                  height: 38,
+                  child: TextField(
+                    controller: _cantidadController,
+                    focusNode: _cantidadFocus,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 3,
+                        vertical: 5,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.fondo,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(9),
+                        borderSide: BorderSide(
+                          color: AppColors.accent.withOpacity(0.5),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(9),
+                        borderSide: BorderSide(
+                          color: AppColors.accent.withOpacity(0.5),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(9),
+                        borderSide: const BorderSide(
+                          color: AppColors.accent,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    onSubmitted: _actualizarCantidad,
+                    onTapOutside: (_) {
+                      _cantidadFocus.unfocus();
+                      _actualizarCantidad(_cantidadController.text);
+                    },
                   ),
                 ),
+
                 IconButton(
                   visualDensity: VisualDensity.compact,
-                  onPressed: () => onCambiarCantidad(-1),
+                  onPressed: () => widget.onCambiarCantidad(-1),
                   icon: const Icon(
                     Icons.remove_circle_outline_rounded,
                     color: Colors.white70,
