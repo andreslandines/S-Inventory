@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/core/scanner/barcode_scanner_page.dart';
 import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/services/ventas_servicios.dart';
 
@@ -28,6 +29,8 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
 
   bool _cargando = true;
   bool _guardando = false;
+  bool _escaneando = false;
+
   String? _error;
   String _busqueda = '';
 
@@ -51,6 +54,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
 
     try {
       final datos = await _productoService.obtenerProductos();
+
       if (!mounted) return;
 
       setState(() {
@@ -67,14 +71,76 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     }
   }
 
+  // BUSCAR POR NOMBRE O CÓDIGO DE BARRAS
   List<Map<String, dynamic>> get _filtrados {
     final texto = _busqueda.trim().toLowerCase();
 
+    if (texto.isEmpty) return _productos;
+
     return _productos.where((producto) {
-      return (producto['nombre']?.toString() ?? '')
-          .toLowerCase()
-          .contains(texto);
+      final nombre =
+          producto['nombre']?.toString().toLowerCase() ?? '';
+
+      final codigo =
+          producto['codigo_barras']?.toString().toLowerCase() ?? '';
+
+      return nombre.contains(texto) || codigo.contains(texto);
     }).toList();
+  }
+
+  // ABRIR ESCÁNER Y BUSCAR PRODUCTO
+  Future<void> _escanearCodigo() async {
+    if (_escaneando || _cargando || _guardando) return;
+
+    setState(() => _escaneando = true);
+
+    try {
+      final codigo = await Navigator.of(context).push<String>(
+        MaterialPageRoute(
+          builder: (_) => const BarcodeScannerPage(),
+        ),
+      );
+
+      if (!mounted || codigo == null || codigo.trim().isEmpty) {
+        return;
+      }
+
+      final codigoEscaneado = codigo.trim();
+
+      final coincidencias = _productos.where((producto) {
+        final codigoProducto =
+            producto['codigo_barras']?.toString().trim() ?? '';
+
+        return codigoProducto == codigoEscaneado;
+      }).toList();
+
+      if (coincidencias.isEmpty) {
+        _mensaje(
+          'No se encontró ningún producto con el código $codigoEscaneado.',
+        );
+        return;
+      }
+
+      final producto = coincidencias.first;
+
+      // Mostrar el código encontrado en el buscador.
+      _buscador.text = codigoEscaneado;
+
+      setState(() {
+        _busqueda = codigoEscaneado;
+      });
+
+      // Agregar automáticamente al carrito.
+      _agregar(producto);
+    } catch (e) {
+      if (mounted) {
+        _mensaje('No se pudo escanear el código: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _escaneando = false);
+      }
+    }
   }
 
   double get _total => _carrito.values.fold<double>(
@@ -108,12 +174,22 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     );
   }
 
+  // AGREGAR PRODUCTO AL CARRITO
   void _agregar(Map<String, dynamic> producto) {
     final id = producto['id_productos']?.toString();
-    if (id == null) return;
+
+    if (id == null || id.isEmpty) {
+      _mensaje('No se pudo identificar el producto.');
+      return;
+    }
 
     final stock = int.tryParse('${producto['stock']}') ?? 0;
     final cantidad = _carrito[id]?['cantidad'] as int? ?? 0;
+
+    if (stock <= 0) {
+      _mensaje('Este producto no tiene stock disponible.');
+      return;
+    }
 
     if (cantidad >= stock) {
       _mensaje('No hay suficiente stock disponible.');
@@ -121,12 +197,21 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     }
 
     setState(() {
-      _carrito[id] = {...producto, 'cantidad': cantidad + 1};
+      _carrito[id] = {
+        ...producto,
+        'cantidad': cantidad + 1,
+      };
     });
+
+    _mensaje(
+      '${producto['nombre']} agregado al carrito.',
+    );
   }
 
+  // MODIFICAR CANTIDAD DEL CARRITO
   void _cambiarCantidad(String id, int cambio) {
     final item = _carrito[id];
+
     if (item == null) return;
 
     final nueva = (item['cantidad'] as int) + cambio;
@@ -146,6 +231,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
     });
   }
 
+  // GUARDAR VENTA
   Future<void> _guardarVenta() async {
     if (_carrito.isEmpty || _guardando) return;
 
@@ -174,6 +260,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
       );
 
       if (!mounted) return;
+
       Navigator.pop(context, true);
     } catch (e) {
       _mensaje('No se pudo registrar la venta: $e');
@@ -271,6 +358,7 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
             onChanged: (valor) {
               setState(() => _busqueda = valor);
             },
+            onEscanear: _escanearCodigo,
           ),
         ),
         Padding(
@@ -317,10 +405,13 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
                   itemCount: _filtrados.length,
                   itemBuilder: (context, index) {
                     final producto = _filtrados[index];
+
                     final id =
                         producto['id_productos']?.toString() ?? '';
+
                     final cantidad =
                         _carrito[id]?['cantidad'] as int? ?? 0;
+
                     final precio =
                         double.tryParse('${producto['precio']}') ?? 0;
 

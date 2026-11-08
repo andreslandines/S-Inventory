@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/components/producto/formulario.dart';
 import 'package:s_inventory/services/producto_service.dart';
+import 'package:s_inventory/core/scanner/barcode_scanner_page.dart';
 
 class BuscadorProductos extends StatefulWidget {
   final ValueChanged<Map<String, dynamic>>? onProductoTap;
@@ -24,6 +25,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
   String busqueda = '';
   String categoriaSeleccionada = 'Todas las categorías';
   bool cargando = false;
+  bool _escaneando = false;
 
   @override
   void initState() {
@@ -36,28 +38,35 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
 
     try {
       final datos = await _service.obtenerProductos();
+
       if (!mounted) return;
+
       setState(() => productos = datos);
     } catch (_) {
       if (!mounted) return;
+
       setState(() => productos = []);
     } finally {
-      if (mounted) setState(() => cargando = false);
+      if (mounted) {
+        setState(() => cargando = false);
+      }
     }
   }
 
   String _categoria(Map<String, dynamic> producto) {
     final valor = producto['categoria']?.toString().trim() ?? '';
+
     if (valor.isEmpty) return 'Sin categoría';
+
     return valor.split(' - ').first.trim();
   }
 
   List<String> get _categorias {
-  return [
-    'Todas las categorías',
-    ...FormularioProducto.categorias.keys,
-  ];
-}
+    return [
+      'Todas las categorías',
+      ...FormularioProducto.categorias.keys,
+    ];
+  }
 
   List<Map<String, dynamic>> get _resultados {
     final texto = busqueda.trim().toLowerCase();
@@ -70,18 +79,66 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
     return productos.where((p) {
       final nombre = (p['nombre'] ?? '').toString().toLowerCase();
       final categoria = (p['categoria'] ?? '').toString().toLowerCase();
+      final codigoBarras =
+          (p['codigo_barras'] ?? '').toString().toLowerCase();
 
       final coincideTexto = texto.isEmpty ||
           nombre.contains(texto) ||
-          categoria.contains(texto);
+          categoria.contains(texto) ||
+          codigoBarras.contains(texto);
 
-     final coincideCategoria =
-    categoriaSeleccionada == 'Todas las categorías' ||
-    _categoria(p).toLowerCase() ==
-        categoriaSeleccionada.toLowerCase();
+      final coincideCategoria =
+          categoriaSeleccionada == 'Todas las categorías' ||
+          _categoria(p).toLowerCase() ==
+              categoriaSeleccionada.toLowerCase();
 
       return coincideTexto && coincideCategoria;
     }).toList();
+  }
+
+  Future<void> _escanearCodigo() async {
+    if (_escaneando) return;
+
+    setState(() => _escaneando = true);
+
+    try {
+      final codigo = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const BarcodeScannerPage(),
+        ),
+      );
+
+      if (!mounted || codigo == null || codigo.trim().isEmpty) {
+        return;
+      }
+
+      final codigoLimpio = codigo.trim();
+
+      setState(() {
+        _controller.text = codigoLimpio;
+        busqueda = codigoLimpio;
+      });
+
+      final existe = productos.any(
+        (p) =>
+            (p['codigo_barras'] ?? '').toString().trim() ==
+            codigoLimpio,
+      );
+
+      if (!existe) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se encontró un producto con ese código.'),
+            backgroundColor: Color(0xFFB83232),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _escaneando = false);
+      }
+    }
   }
 
   void _seleccionarCategoria(String categoria) {
@@ -103,6 +160,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
   Widget build(BuildContext context) {
     final resultados = _resultados;
     final categorias = _categorias;
+
     final filtroActivo =
         categoriaSeleccionada != 'Todas las categorías';
 
@@ -114,24 +172,48 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
             Expanded(
               child: TextField(
                 controller: _controller,
-                onChanged: (valor) => setState(() => busqueda = valor),
+                onChanged: (valor) {
+                  setState(() => busqueda = valor);
+                },
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Buscar productos...',
+                  hintText: 'Buscar por nombre o código...',
                   hintStyle: const TextStyle(color: Colors.white60),
                   prefixIcon: const Icon(
                     Icons.search,
                     color: Colors.white70,
                   ),
-                  suffixIcon: busqueda.isNotEmpty
-                      ? IconButton(
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (busqueda.isNotEmpty)
+                        IconButton(
+                          tooltip: 'Limpiar búsqueda',
                           onPressed: _limpiarBusqueda,
                           icon: const Icon(
                             Icons.close,
                             color: Colors.white70,
                           ),
-                        )
-                      : null,
+                        ),
+                      IconButton(
+                        tooltip: 'Escanear código de barras',
+                        onPressed: _escaneando ? null : _escanearCodigo,
+                        icon: _escaneando
+                            ? const SizedBox(
+                                width: 19,
+                                height: 19,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.accent,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.qr_code_scanner_rounded,
+                                color: AppColors.accent,
+                              ),
+                      ),
+                    ],
+                  ),
                   filled: true,
                   fillColor: AppColors.fondo,
                   contentPadding: const EdgeInsets.symmetric(
@@ -171,7 +253,8 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
               ),
               onSelected: _seleccionarCategoria,
               itemBuilder: (context) => categorias.map((categoria) {
-                final seleccionada = categoria == categoriaSeleccionada;
+                final seleccionada =
+                    categoria == categoriaSeleccionada;
 
                 return PopupMenuItem<String>(
                   value: categoria,
@@ -204,6 +287,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
             ),
           ],
         ),
+
         if (filtroActivo)
           Padding(
             padding: const EdgeInsets.only(top: 6),
@@ -212,9 +296,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
                 Expanded(
                   child: Text(
                     'Categoría: $categoriaSeleccionada',
-                    style: const TextStyle(
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
                 GestureDetector(
@@ -232,6 +314,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
               ],
             ),
           ),
+
         if (cargando)
           const Padding(
             padding: EdgeInsets.only(top: 10),
@@ -244,6 +327,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
               ),
             ),
           ),
+
         if (!cargando &&
             (busqueda.trim().isNotEmpty || filtroActivo))
           Padding(
@@ -251,12 +335,18 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
             child: resultados.isEmpty
                 ? const Text(
                     'No se encontraron productos con esos filtros.',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
                   )
                 : Column(
                     children: resultados.map((p) {
                       final imagen = p['imagen']?.toString() ?? '';
-                      final categoria = p['categoria']?.toString() ?? '';
+                      final categoria =
+                          p['categoria']?.toString() ?? '';
+                      final codigo =
+                          p['codigo_barras']?.toString() ?? '';
 
                       return Card(
                         color: Colors.white.withOpacity(0.08),
@@ -279,7 +369,8 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
                           subtitle: Text(
                             'Precio: ${p['precio'] ?? 'No disponible'}\n'
                             'Stock: ${p['stock'] ?? 'No disponible'}'
-                            '${categoria.isNotEmpty ? '\n$categoria' : ''}',
+                            '${categoria.isNotEmpty ? '\n$categoria' : ''}'
+                            '${codigo.isNotEmpty ? '\nCódigo: $codigo' : ''}',
                             style: const TextStyle(
                               color: Colors.white70,
                               height: 1.4,
@@ -298,7 +389,10 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
     if (imagen.isEmpty) {
       return const CircleAvatar(
         backgroundColor: Colors.white12,
-        child: Icon(Icons.inventory_2_outlined, color: Colors.white),
+        child: Icon(
+          Icons.inventory_2_outlined,
+          color: Colors.white,
+        ),
       );
     }
 
