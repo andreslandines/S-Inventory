@@ -23,6 +23,7 @@ export const listarVentas = async (req, res) => {
     }
 };
 
+
 export const obtenerVenta = async (req, res) => {
     try {
         const { id_venta } = req.params;
@@ -41,24 +42,51 @@ export const obtenerVenta = async (req, res) => {
 
         if (errorDetalles) {
             console.error("Error al obtener los detalles:", errorDetalles);
+
             return res.status(500).json({
                 error: "Error al obtener los detalles de la venta",
                 detalle: errorDetalles.message
             });
         }
 
+        // Obtener el nombre de cada producto usando su ID.
+        const detallesConProductos = await Promise.all(
+            (detalles || []).map(async (detalle) => {
+                const { data: producto, error: errorProducto } =
+                    await obtenerPorId(detalle.id_producto);
+
+                if (errorProducto) {
+                    console.error(
+                        `Error al consultar el producto ${detalle.id_producto}:`,
+                        errorProducto
+                    );
+                }
+
+                return {
+                    ...detalle,
+                    nombre_producto:
+                        producto?.nombre || `Producto ${detalle.id_producto}`
+                };
+            })
+        );
+
         return res.status(200).json({
             id_venta: venta.id_venta,
             id_usuario: venta.id_usuario,
             total: venta.total,
             fecha: venta.fecha,
-            detalles
+            detalles: detallesConProductos
         });
+
     } catch (error) {
         console.error("Error al obtener la venta:", error);
-        return res.status(500).json({ error: error.message });
+
+        return res.status(500).json({
+            error: error.message
+        });
     }
 };
+
 
 export const registrarVenta = async (req, res) => {
     try {
