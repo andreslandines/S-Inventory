@@ -89,15 +89,16 @@ Future<void> _editar(Map<String, dynamic> producto) async {
   setState(() => _procesando = true);
 
   try {
-    await _service.actualizarProducto(
-      id: id,
-      nombre: datos['nombre']!,
-      descripcion: datos['descripcion']!,
-      precio: datos['precio']!,
-      categoria: datos['categoria']!,
-      stock: datos['stock']!,
-      imagenArchivo: datos['imagenArchivo'],
-    );
+await _service.actualizarProducto(
+  id: id,
+  nombre: datos['nombre']!,
+  descripcion: datos['descripcion']!,
+  precio: datos['precio']!,
+  categoria: datos['categoria']!,
+  stock: datos['stock']!,
+  codigoBarras: datos['codigoBarras'] as String?,
+  imagenArchivo: datos['imagenArchivo'],
+);
 
     if (!mounted) return;
 

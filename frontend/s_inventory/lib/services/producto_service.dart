@@ -1,6 +1,6 @@
 
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
@@ -33,12 +33,14 @@ class ProductoService {
     }).toList();
   }
 
+  // REGISTRAR PRODUCTO
   Future<Map<String, dynamic>> crearProducto({
     required String nombre,
     required String descripcion,
     required String precio,
     required String categoria,
     required String stock,
+    String? codigoBarras,
     List<int>? imagenBytes,
     String? nombreImagen,
     String? imagenUrl,
@@ -69,6 +71,7 @@ class ProductoService {
       'precio': precio.trim(),
       'categoria': categoria.trim(),
       'stock': stock.trim(),
+      'codigo_barras': codigoBarras?.trim() ?? '',
     });
 
     final urlImagen = imagenUrl?.trim() ?? '';
@@ -82,14 +85,18 @@ class ProductoService {
         ),
       );
     } else if (urlImagen.isNotEmpty) {
-      solicitud.fields['imagenUrl'] = urlImagen;
+      solicitud.fields['imagen_url'] = urlImagen;
     } else {
       throw Exception(
         'Selecciona una imagen o proporciona una URL válida.',
       );
     }
-
+    debugPrint(
+  'CÓDIGO ENVIADO AL BACKEND: ${solicitud.fields['codigo_barras']}',
+);
+    
     final respuesta = await solicitud.send();
+    
     final cuerpo = await respuesta.stream.bytesToString();
 
     final datos = _decodificarRespuesta(cuerpo);
@@ -115,6 +122,7 @@ class ProductoService {
     required String precio,
     required String categoria,
     required String stock,
+    String? codigoBarras,
     XFile? imagenArchivo,
   }) async {
     final prefs = await SharedPreferences.getInstance();
@@ -143,6 +151,7 @@ class ProductoService {
       ).toString(),
       'categoria': categoria.trim(),
       'stock': int.parse(stock).toString(),
+      'codigo_barras': codigoBarras?.trim() ?? '',
     });
 
     // Solo se adjunta la imagen cuando el usuario selecciona otra.
@@ -180,6 +189,7 @@ class ProductoService {
     );
   }
 
+  // ELIMINAR PRODUCTO
   Future<void> eliminarProducto(String id) async {
     final idProducto = id.trim();
 

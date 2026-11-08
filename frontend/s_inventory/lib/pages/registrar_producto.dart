@@ -15,12 +15,14 @@ class RegistrarProductoPage extends StatefulWidget {
 
 class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
   final ProductoService _service = ProductoService();
+
   bool _abriendoFormulario = false;
   bool _guardando = false;
 
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _abrirFormulario();
     });
@@ -45,8 +47,11 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
 
       final XFile? imagen = datos['imagen'] as XFile?;
       final String? imagenUrl = datos['imagenUrl'] as String?;
-
+      final String? codigoBarras =
+          datos['codigoBarras'] as String?;
+debugPrint('CÓDIGO RECIBIDO DEL FORMULARIO: $codigoBarras');
       List<int>? bytes;
+
       if (imagen != null) {
         bytes = await imagen.readAsBytes();
       }
@@ -60,6 +65,7 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
         imagenBytes: bytes,
         nombreImagen: imagen?.name,
         imagenUrl: imagenUrl,
+        codigoBarras: codigoBarras,
       );
 
       if (!mounted) return;

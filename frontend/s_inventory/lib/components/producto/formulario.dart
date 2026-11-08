@@ -1,271 +1,249 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:s_inventory/components/scanner/barcode_scanner_field.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'producto_widgets.dart';
 import 'producto_campos.dart';
 import 'producto_imagen.dart';
 
 class FormularioProducto {
-static const Map<String, List<String>> categorias = {
-  'Frutas, verduras y tubérculos': [
-    'Papa',
-    'Papa amarilla',
-    'Cebolla cabezona',
-    'Cebolla larga',
-    'Tomate',
-    'Zanahoria',
-    'Ajo',
-    'Otro',
-  ],
-
-  'Abarrotes y despensa': [
-    'Arroz',
-    'Pasta',
-    'Macarrones',
-    'Maíz en bolsa',
-    'Avena',
-    'Café',
-    'Chocolate',
-    'Panela',
-    'Sal',
-    'Azúcar',
-    'Aceite',
-    'Manteca',
-    'Maicena',
-    'Levadura',
-    'Polvo para hornear',
-    'Otro',
-  ],
-
-  'Enlatados y conservas': [
-    'Sardinas en lata',
-    'Atún en lata',
-    'Salchichas en lata',
-    'Maíz en lata',
-    'Otro',
-  ],
-
-  'Lácteos y derivados': [
-    'Crema de leche',
-    'Mantequilla',
-    'Leche condensada',
-    'Leche',
-    'Otro',
-  ],
-
-  'Bebidas': [
-    'Gaseosas',
-    'Electrolitos',
-    'Frutiño',
-    'Avena en bolsa',
-    'Vaso de guarapo',
-    'Otro',
-  ],
-
-  'Helados y congelados': [
-    'Bolis',
-    'Bonais',
-    'Hielo en bolsa',
-    'Otro',
-  ],
-
-  'Panadería y comidas preparadas': [
-    'Pan',
-    'Empanadas',
-    'Chocorramo',
-    'Otro',
-  ],
-
-  'Dulces, galletas y snacks': [
-    'Galletas',
-    'Gomitas',
-    'Chicles',
-    'Chupetes',
-    'Dulces',
-    'Chocolatinas',
-    'Papas de paquete',
-    'Otro',
-  ],
-
-  'Salsas y condimentos': [
-    'Salsas',
-    'Sazonador',
-    'Color',
-    'Canela',
-    'Pimienta',
-    'Ajo en polvo',
-    'Maggi',
-    'Ricostilla',
-    'Otro',
-  ],
-
-  'Aseo y limpieza': [
-    'Detergente',
-    'Suavizante',
-    'Jabón para ropa',
-    'Lavaloza',
-    'Sabra',
-    'Brilladora',
-    'Esponjas',
-    'Bicarbonato',
-    'Desinfectante',
-    'Cloro',
-    'Otro',
-  ],
-
-  'Cuidado personal y belleza': [
-    'Shampoo',
-    'Acondicionador',
-    'Crema para el cabello',
-    'Gel para el cabello',
-    'Desodorante',
-    'Perfume para hombre',
-    'Perfume para mujer',
-    'Bloqueador solar',
-    'Peines para hombre',
-    'Peines para mujer',
-    'Cepillos',
-    'Cuchillas de afeitar',
-    'Otro',
-  ],
-
-  'Higiene femenina': [
-    'Toallas íntimas',
-    'Tampones',
-    'Otro',
-  ],
-
-  'Bebés y maternidad': [
-    'Pañales',
-    'Pañitos húmedos',
-    'Chupetes para tetero',
-    'Colcha para bebé',
-    'Otro',
-  ],
-
-  'Ropa y calzado': [
-    'Ropa para hombre',
-    'Ropa para mujer',
-    'Ropa para niños',
-    'Ropa para niñas',
-    'Zapatos para hombre',
-    'Zapatos para mujer',
-    'Zapatos para niños',
-    'Zapatos para niñas',
-    'Otro',
-  ],
-
-  'Accesorios y bisutería': [
-    'Gomas para el cabello',
-    'Cauchitos',
-    'Caimanes para mujer',
-    'Pinzas para el cabello',
-    'Balacas',
-    'Rubor',
-    'Otro',
-  ],
-
-  'Papelería y útiles escolares': [
-    'Cuadernos',
-    'Cartulina',
-    'Cartulina en pliego',
-    'Bolígrafos',
-    'Lápices',
-    'Marcadores',
-    'Reglas',
-    'Borradores',
-    'Sacapuntas',
-    'Correctores',
-    'Sobres',
-    'Bisturí',
-    'Cinta',
-    'Otro',
-  ],
-
-  'Manualidades y costura': [
-    'Escarcha',
-    'Colbón',
-    'Temperas',
-    'Plastilina',
-    'Crayones',
-    'Hilos de coser',
-    'Papel seda',
-    'Papel crepé',
-    'Foami',
-    'Velas volcán',
-    'Otro',
-  ],
-
-  'Ferretería y plomería': [
-    'Llaves para el agua',
-    'Cinta de teflón',
-    'Tubos para agua',
-    'Chazos',
-    'Tornillos',
-    'Otro',
-  ],
-
-  'Electricidad e iluminación': [
-    'Bombillos',
-    'Pilas',
-    'Cinta aislante',
-    'Otro',
-  ],
-
-  'Droguería y primeros auxilios': [
-    'Alcohol antiséptico',
-    'Curitas',
-    'Tapabocas',
-    'Medicamentos de venta libre',
-    'Otro',
-  ],
-
-  'Cigarrillos y encendedores': [
-    'Cigarrillos',
-    'Mecheras',
-    'Otro',
-  ],
-
-  'Hogar, desechables y empaques': [
-    'Bolsas plásticas',
-    'Bolsas de regalo',
-    'Vasos desechables',
-    'Servilletas',
-    'Palillos',
-    'Papel aluminio',
-    'Plásticos',
-    'Otro',
-  ],
-
-  'Mascotas': [
-    'Purina para perros',
-    'Purina para gatos',
-    'Otro',
-  ],
-
-  'Velas y artículos para fiestas': [
-    'Velas',
-    'Velas volcán',
-    'Sobres',
-    'Otro',
-  ],
-
-  'Otros': [
-    'Otro',
-  ],
-};
+  static const Map<String, List<String>> categorias = {
+    'Frutas, verduras y tubérculos': [
+      'Papa',
+      'Papa amarilla',
+      'Cebolla cabezona',
+      'Cebolla larga',
+      'Tomate',
+      'Zanahoria',
+      'Ajo',
+      'Otro',
+    ],
+    'Abarrotes y despensa': [
+      'Arroz',
+      'Pasta',
+      'Macarrones',
+      'Maíz en bolsa',
+      'Avena',
+      'Café',
+      'Chocolate',
+      'Panela',
+      'Sal',
+      'Azúcar',
+      'Aceite',
+      'Manteca',
+      'Maicena',
+      'Levadura',
+      'Polvo para hornear',
+      'Otro',
+    ],
+    'Enlatados y conservas': [
+      'Sardinas en lata',
+      'Atún en lata',
+      'Salchichas en lata',
+      'Maíz en lata',
+      'Otro',
+    ],
+    'Lácteos y derivados': [
+      'Crema de leche',
+      'Mantequilla',
+      'Leche condensada',
+      'Leche',
+      'Otro',
+    ],
+    'Bebidas': [
+      'Gaseosas',
+      'Electrolitos',
+      'Frutiño',
+      'Avena en bolsa',
+      'Vaso de guarapo',
+      'Otro',
+    ],
+    'Helados y congelados': [
+      'Bolis',
+      'Bonais',
+      'Hielo en bolsa',
+      'Otro',
+    ],
+    'Panadería y comidas preparadas': [
+      'Pan',
+      'Empanadas',
+      'Chocorramo',
+      'Otro',
+    ],
+    'Dulces, galletas y snacks': [
+      'Galletas',
+      'Gomitas',
+      'Chicles',
+      'Chupetes',
+      'Dulces',
+      'Chocolatinas',
+      'Papas de paquete',
+      'Otro',
+    ],
+    'Salsas y condimentos': [
+      'Salsas',
+      'Sazonador',
+      'Color',
+      'Canela',
+      'Pimienta',
+      'Ajo en polvo',
+      'Maggi',
+      'Ricostilla',
+      'Otro',
+    ],
+    'Aseo y limpieza': [
+      'Detergente',
+      'Suavizante',
+      'Jabón para ropa',
+      'Lavaloza',
+      'Sabra',
+      'Brilladora',
+      'Esponjas',
+      'Bicarbonato',
+      'Desinfectante',
+      'Cloro',
+      'Otro',
+    ],
+    'Cuidado personal y belleza': [
+      'Shampoo',
+      'Acondicionador',
+      'Crema para el cabello',
+      'Gel para el cabello',
+      'Desodorante',
+      'Perfume para hombre',
+      'Perfume para mujer',
+      'Bloqueador solar',
+      'Peines para hombre',
+      'Peines para mujer',
+      'Cepillos',
+      'Cuchillas de afeitar',
+      'Otro',
+    ],
+    'Higiene femenina': [
+      'Toallas íntimas',
+      'Tampones',
+      'Otro',
+    ],
+    'Bebés y maternidad': [
+      'Pañales',
+      'Pañitos húmedos',
+      'Chupetes para tetero',
+      'Colcha para bebé',
+      'Otro',
+    ],
+    'Ropa y calzado': [
+      'Ropa para hombre',
+      'Ropa para mujer',
+      'Ropa para niños',
+      'Ropa para niñas',
+      'Zapatos para hombre',
+      'Zapatos para mujer',
+      'Zapatos para niños',
+      'Zapatos para niñas',
+      'Otro',
+    ],
+    'Accesorios y bisutería': [
+      'Gomas para el cabello',
+      'Cauchitos',
+      'Caimanes para mujer',
+      'Pinzas para el cabello',
+      'Balacas',
+      'Rubor',
+      'Otro',
+    ],
+    'Papelería y útiles escolares': [
+      'Cuadernos',
+      'Cartulina',
+      'Cartulina en pliego',
+      'Bolígrafos',
+      'Lápices',
+      'Marcadores',
+      'Reglas',
+      'Borradores',
+      'Sacapuntas',
+      'Correctores',
+      'Sobres',
+      'Bisturí',
+      'Cinta',
+      'Otro',
+    ],
+    'Manualidades y costura': [
+      'Escarcha',
+      'Colbón',
+      'Temperas',
+      'Plastilina',
+      'Crayones',
+      'Hilos de coser',
+      'Papel seda',
+      'Papel crepé',
+      'Foami',
+      'Velas volcán',
+      'Otro',
+    ],
+    'Ferretería y plomería': [
+      'Llaves para el agua',
+      'Cinta de teflón',
+      'Tubos para agua',
+      'Chazos',
+      'Tornillos',
+      'Otro',
+    ],
+    'Electricidad e iluminación': [
+      'Bombillos',
+      'Pilas',
+      'Cinta aislante',
+      'Otro',
+    ],
+    'Droguería y primeros auxilios': [
+      'Alcohol antiséptico',
+      'Curitas',
+      'Tapabocas',
+      'Medicamentos de venta libre',
+      'Otro',
+    ],
+    'Cigarrillos y encendedores': [
+      'Cigarrillos',
+      'Mecheras',
+      'Otro',
+    ],
+    'Hogar, desechables y empaques': [
+      'Bolsas plásticas',
+      'Bolsas de regalo',
+      'Vasos desechables',
+      'Servilletas',
+      'Palillos',
+      'Papel aluminio',
+      'Plásticos',
+      'Otro',
+    ],
+    'Mascotas': [
+      'Purina para perros',
+      'Purina para gatos',
+      'Otro',
+    ],
+    'Velas y artículos para fiestas': [
+      'Velas',
+      'Velas volcán',
+      'Sobres',
+      'Otro',
+    ],
+    'Otros': [
+      'Otro',
+    ],
+  };
 
   static Future<Map<String, dynamic>?> mostrar(
     BuildContext context,
   ) async {
     final formKey = GlobalKey<FormState>();
+
     final nombre = TextEditingController();
     final descripcion = TextEditingController();
     final precio = TextEditingController();
     final stock = TextEditingController(text: '0');
     final url = TextEditingController();
     final otroTipo = TextEditingController();
+    final codigoBarras = TextEditingController();
 
     XFile? imagen;
     String? categoria;
@@ -302,7 +280,9 @@ static const Map<String, List<String>> categorias = {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('No se pudo seleccionar la imagen.'),
+                      content: Text(
+                        'No se pudo seleccionar la imagen.',
+                      ),
                     ),
                   );
                 }
@@ -316,7 +296,9 @@ static const Map<String, List<String>> categorias = {
                 vertical: 22,
               ),
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 520),
+                constraints: const BoxConstraints(
+                  maxWidth: 520,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.fondo,
                   borderRadius: BorderRadius.circular(26),
@@ -328,10 +310,18 @@ static const Map<String, List<String>> categorias = {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _encabezado(dialogContext),
-                    Container(height: 1, color: Colors.white10),
+                    Container(
+                      height: 1,
+                      color: Colors.white10,
+                    ),
                     Flexible(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                        padding: const EdgeInsets.fromLTRB(
+                          20,
+                          4,
+                          20,
+                          20,
+                        ),
                         child: Form(
                           key: formKey,
                           child: Column(
@@ -365,11 +355,15 @@ static const Map<String, List<String>> categorias = {
                                     final uri = Uri.tryParse(
                                       valor?.trim() ?? '',
                                     );
+
                                     if (uri == null ||
                                         !uri.hasAuthority ||
-                                        !['http', 'https'].contains(uri.scheme)) {
+                                        !['http', 'https'].contains(
+                                          uri.scheme,
+                                        )) {
                                       return 'Ingresa una URL válida';
                                     }
+
                                     return null;
                                   },
                                 ),
@@ -391,6 +385,16 @@ static const Map<String, List<String>> categorias = {
                                 icono: Icons.notes_rounded,
                                 maxLineas: 2,
                               ),
+                              const SizedBox(height: 12),
+
+                              // Campo reutilizable para escanear
+                              // o escribir el código de barras.
+                              BarcodeScannerField(
+                                controller: codigoBarras,
+                                label: 'Código de barras',
+                                hint: 'Escanea o escribe el código',
+                              ),
+
                               const ProductoSeccion(
                                 titulo: 'Categoría y tipo',
                                 icono: Icons.category_outlined,
@@ -439,20 +443,23 @@ static const Map<String, List<String>> categorias = {
                                 icono: Icons.price_change_outlined,
                               ),
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
                                     child: ProductoCampoTexto(
                                       controller: precio,
                                       etiqueta: 'Precio *',
                                       icono: Icons.attach_money_rounded,
-                                      teclado: const TextInputType.numberWithOptions(
+                                      teclado:
+                                          const TextInputType.numberWithOptions(
                                         decimal: true,
                                       ),
                                       validator: (v) {
                                         final p = double.tryParse(
                                           (v ?? '').replaceAll(',', '.'),
                                         );
+
                                         return p == null || p <= 0
                                             ? 'Precio inválido'
                                             : null;
@@ -468,6 +475,7 @@ static const Map<String, List<String>> categorias = {
                                       teclado: TextInputType.number,
                                       validator: (v) {
                                         final s = int.tryParse(v ?? '');
+
                                         return s == null || s < 0
                                             ? 'Stock inválido'
                                             : null;
@@ -478,7 +486,9 @@ static const Map<String, List<String>> categorias = {
                               ),
                               const SizedBox(height: 22),
                               _botonGuardar(() {
-                                if (!formKey.currentState!.validate()) return;
+                                if (!formKey.currentState!.validate()) {
+                                  return;
+                                }
 
                                 if (!usarUrl && imagen == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -499,6 +509,10 @@ static const Map<String, List<String>> categorias = {
                                 Navigator.pop(dialogContext, {
                                   'nombre': nombre.text.trim(),
                                   'descripcion': descripcion.text.trim(),
+                                  'codigoBarras':
+                                      codigoBarras.text.trim().isEmpty
+                                          ? null
+                                          : codigoBarras.text.trim(),
                                   'precio': precio.text
                                       .replaceAll(',', '.')
                                       .trim(),
@@ -543,14 +557,19 @@ static const Map<String, List<String>> categorias = {
           },
         ),
       );
-    } finally {
-      nombre.dispose();
-      descripcion.dispose();
-      precio.dispose();
-      stock.dispose();
-      url.dispose();
-      otroTipo.dispose();
-    }
+} finally {
+  // Esperar a que Flutter termine el ciclo de reconstrucción
+  // y retire el diálogo antes de eliminar sus controladores.
+  await WidgetsBinding.instance.endOfFrame;
+
+  nombre.dispose();
+  descripcion.dispose();
+  precio.dispose();
+  stock.dispose();
+  url.dispose();
+  otroTipo.dispose();
+  codigoBarras.dispose();
+}
   }
 
   static Widget _encabezado(BuildContext context) {
@@ -586,14 +605,20 @@ static const Map<String, List<String>> categorias = {
                 SizedBox(height: 4),
                 Text(
                   'Agrega un producto a tu inventario',
-                  style: TextStyle(color: Colors.white60, fontSize: 11),
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
           ),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close_rounded, color: Colors.white60),
+            icon: const Icon(
+              Icons.close_rounded,
+              color: Colors.white60,
+            ),
           ),
         ],
       ),
@@ -609,7 +634,10 @@ static const Map<String, List<String>> categorias = {
         icon: const Icon(Icons.save_rounded),
         label: const Text(
           'Guardar producto',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: productoAmarillo,

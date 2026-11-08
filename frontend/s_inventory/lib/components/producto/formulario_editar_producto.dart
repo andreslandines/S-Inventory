@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:s_inventory/core/colores.dart';
+import 'package:s_inventory/components/scanner/barcode_scanner_field.dart';
 
 class FormularioEditarProducto {
   static Future<Map<String, dynamic>?> mostrar(
@@ -38,6 +39,7 @@ class _DialogoEditarProductoState
   late final TextEditingController _precio;
   late final TextEditingController _categoria;
   late final TextEditingController _stock;
+  late final TextEditingController _codigoBarras;
 
   XFile? _imagenSeleccionada;
   Uint8List? _imagenBytes;
@@ -52,15 +54,29 @@ class _DialogoEditarProductoState
 
     final p = widget.producto;
 
-    _nombre = TextEditingController(text: '${p['nombre'] ?? ''}');
+    _nombre = TextEditingController(
+      text: '${p['nombre'] ?? ''}',
+    );
+
     _descripcion = TextEditingController(
       text: '${p['descripcion'] ?? ''}',
     );
-    _precio = TextEditingController(text: '${p['precio'] ?? ''}');
+
+    _precio = TextEditingController(
+      text: '${p['precio'] ?? ''}',
+    );
+
     _categoria = TextEditingController(
       text: '${p['categoria'] ?? ''}',
     );
-    _stock = TextEditingController(text: '${p['stock'] ?? 0}');
+
+    _stock = TextEditingController(
+      text: '${p['stock'] ?? 0}',
+    );
+
+    _codigoBarras = TextEditingController(
+      text: '${p['codigo_barras'] ?? ''}',
+    );
   }
 
   @override
@@ -70,6 +86,7 @@ class _DialogoEditarProductoState
     _precio.dispose();
     _categoria.dispose();
     _stock.dispose();
+    _codigoBarras.dispose();
     super.dispose();
   }
 
@@ -301,6 +318,9 @@ class _DialogoEditarProductoState
       'precio': _precio.text.replaceAll(',', '.').trim(),
       'categoria': _categoria.text.trim(),
       'stock': _stock.text.trim(),
+      'codigoBarras': _codigoBarras.text.trim().isEmpty
+          ? null
+          : _codigoBarras.text.trim(),
 
       // URL anterior y archivo nuevo, si se seleccionó uno.
       'imagen': _imagenActual,
@@ -401,11 +421,22 @@ class _DialogoEditarProductoState
                     'Nombre del producto',
                     icono: Icons.inventory_2_outlined,
                   ),
+
                   _campo(
                     _descripcion,
                     'Descripción',
                     icono: Icons.description_outlined,
                     maxLines: 3,
+                  ),
+
+                  // Código de barras: escritura manual o escáner.
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: BarcodeScannerField(
+                      controller: _codigoBarras,
+                      label: 'Código de barras',
+                      hint: 'Escribe o escanea el código',
+                    ),
                   ),
 
                   Row(
