@@ -16,6 +16,8 @@ dependencies:
   firebase_core: ^5.0.0
   firebase_messaging: ^17.0.0
   mobile_scanner: 7.5.0
+  flutter_pdfview: ^1.4.5
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
@@ -41,4 +43,4 @@ flutter:
 
   assets:
     - assets/images/
-
+    - assets/documents/manual_usuario.pdf
