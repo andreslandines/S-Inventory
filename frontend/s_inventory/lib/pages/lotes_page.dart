@@ -146,6 +146,39 @@ class _LotesPageState extends State<LotesPage> {
     return {};
   }
 
+  // Imagen del producto para la tarjeta del lote.
+  Widget _imagenProducto(Map<String, dynamic> producto) {
+    final imagen = producto['imagen']?.toString().trim() ?? '';
+
+    if (imagen.isEmpty) {
+      return _imagenVacia();
+    }
+
+    return Image.network(
+      imagen,
+      width: 43,
+      height: 43,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _imagenVacia(),
+    );
+  }
+
+  // Marcador cuando el producto no tiene imagen disponible.
+  Widget _imagenVacia() {
+    return Container(
+      width: 43,
+      height: 43,
+      decoration: BoxDecoration(
+        color: amarillo.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.inventory_2_outlined,
+        color: amarillo,
+      ),
+    );
+  }
+
   String _estadoLote(Map<String, dynamic> lote) {
     final dias = _diasRestantes(lote['fecha_vencimiento']);
 
@@ -304,17 +337,9 @@ class _LotesPageState extends State<LotesPage> {
         children: [
           Row(
             children: [
-              Container(
-                width: 43,
-                height: 43,
-                decoration: BoxDecoration(
-                  color: amarillo.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.inventory_2_outlined,
-                  color: amarillo,
-                ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _imagenProducto(producto),
               ),
               const SizedBox(width: 12),
               Expanded(

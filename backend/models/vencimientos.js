@@ -30,7 +30,8 @@ export const obtenerVencimientos = async () => {
                 id_productos,
                 nombre,
                 categoria,
-                stock
+                stock,
+                imagen
             )
         `)
         .order("fecha_vencimiento", {
@@ -59,7 +60,8 @@ export const obtenerVencimientoPorId = async (id_vencimiento) => {
                 id_productos,
                 nombre,
                 categoria,
-                stock
+                stock,
+                imagen
             )
         `)
         .eq("id_vencimiento", id_vencimiento)
@@ -105,7 +107,8 @@ export const actualizarVencimiento = async (
                 id_productos,
                 nombre,
                 categoria,
-                stock
+                stock,
+                imagen
             )
         `)
         .single();
@@ -146,7 +149,8 @@ export const obtenerProximosAVencer = async (dias = 30) => {
                 id_productos,
                 nombre,
                 categoria,
-                stock
+                stock,
+                imagen
             )
         `)
         .gte("fecha_vencimiento", hoy)
@@ -179,7 +183,8 @@ export const obtenerLotesVencidos = async () => {
                 id_productos,
                 nombre,
                 categoria,
-                stock
+                stock,
+                imagen
             )
         `)
         .lt("fecha_vencimiento", hoy)
