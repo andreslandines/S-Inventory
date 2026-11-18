@@ -27,7 +27,7 @@ app.get('/',(req,res)=>{
     res.json({
         Mensaje:"Bienvenido al BACKEND de S-Inventory",
         Estado: "En linea",
-        Version:"1.0.0"
+        Version:"1.0.1"
     })
 })
 
