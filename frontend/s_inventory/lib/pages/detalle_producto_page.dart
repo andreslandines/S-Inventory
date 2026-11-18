@@ -1,8 +1,10 @@
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/components/producto/confirmar_eliminar_producto.dart';
-import 'package:s_inventory/components/producto/formulario_editar_producto.dart';
+import 'package:s_inventory/components/producto/formulario.dart';
+import 'package:s_inventory/pages/registrar_entrada_page.dart';
 import 'package:s_inventory/services/producto_service.dart';
 
 class DetalleProductoPage extends StatefulWidget {
@@ -55,71 +57,119 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
     );
   }
 
- Future<void> _editar() async {
-  final id = _producto['id_productos']?.toString();
+  Future<void> _editar() async {
+    final id = _producto['id_productos']?.toString();
 
-  if (id == null || id.isEmpty) {
-    _mensaje('No se encontró el ID del producto.', error: true);
-    return;
-  }
+    if (id == null || id.isEmpty) {
+      _mensaje('No se encontró el ID del producto.', error: true);
+      return;
+    }
 
-  final datos = await FormularioEditarProducto.mostrar(
-    context,
-    _producto,
-  );
-
-  if (datos == null || !mounted) return;
-
-  setState(() => _procesando = true);
-
-  try {
-    await _service.actualizarProducto(
-      id: id,
-      nombre: datos['nombre']!,
-      descripcion: datos['descripcion']!,
-      precio: datos['precio']!,
-      categoria: datos['categoria']!,
-      codigoBarras: datos['codigoBarras'] as String?,
-      imagenArchivo: datos['imagenArchivo'],
+    // Formulario completo: nombre, descripción, categoría, tipo, precio,
+    // código de barras e imagen.
+    final datos = await FormularioProducto.mostrar(
+      context,
+      producto: _producto,
     );
 
-    if (!mounted) return;
+    if (datos == null || !mounted) return;
 
-    final productos = await _service.obtenerProductos();
+    setState(() => _procesando = true);
 
-    final actualizado = productos.firstWhere(
-      (p) => p['id_productos']?.toString() == id,
-      orElse: () => {
-        ..._producto,
-        'nombre': datos['nombre'],
-        'descripcion': datos['descripcion'],
-        'precio': datos['precio'],
-        'categoria': datos['categoria'],
-        'codigo_barras': datos['codigoBarras'],
-      },
-    );
+    try {
+      final XFile? imagen = datos['imagen'] as XFile?;
 
-    if (!mounted) return;
-
-    setState(() {
-      _producto = Map<String, dynamic>.from(actualizado);
-      _cambios = true;
-    });
-
-    _mensaje('Producto actualizado correctamente.');
-  } catch (e) {
-    if (mounted) {
-      _mensaje(
-        e.toString().replaceFirst('Exception: ', ''),
-        error: true,
+      await _service.actualizarProducto(
+        id: id,
+        nombre: datos['nombre'] as String,
+        descripcion: datos['descripcion'] as String,
+        precio: datos['precio'] as String,
+        categoria: datos['categoria'] as String,
+        codigoBarras: datos['codigoBarras'] as String?,
+        imagenArchivo: imagen,
       );
-    }
-  } finally {
-    if (mounted) {
-      setState(() => _procesando = false);
+
+      if (!mounted) return;
+
+      final productos = await _service.obtenerProductos();
+
+      final actualizado = productos.firstWhere(
+        (p) => p['id_productos']?.toString() == id,
+        orElse: () => {
+          ..._producto,
+          'nombre': datos['nombre'],
+          'descripcion': datos['descripcion'],
+          'precio': datos['precio'],
+          'categoria': datos['categoria'],
+          'codigo_barras': datos['codigoBarras'],
+        },
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _producto = Map<String, dynamic>.from(actualizado);
+        _cambios = true;
+      });
+
+      _mensaje('Producto actualizado correctamente.');
+    } catch (e) {
+      if (mounted) {
+        _mensaje(
+          e.toString().replaceFirst('Exception: ', ''),
+          error: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _procesando = false);
+      }
     }
   }
-}
+
+  // Registrar una entrada (nuevo lote) para aumentar las existencias.
+  Future<void> _agregarStock() async {
+    if (_procesando) return;
+
+    final resultado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegistrarEntradaPage(
+          productoInicial: _producto,
+        ),
+      ),
+    );
+
+    if (resultado != true || !mounted) return;
+
+    try {
+      final productos = await _service.obtenerProductos();
+
+      final actualizado = productos.firstWhere(
+        (p) =>
+            p['id_productos']?.toString() ==
+            _producto['id_productos']?.toString(),
+        orElse: () => _producto,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _producto = Map<String, dynamic>.from(actualizado);
+        _cambios = true;
+      });
+
+      _mensaje('Existencias actualizadas correctamente.');
+    } catch (e) {
+      if (mounted) {
+        _mensaje(
+          e.toString().replaceFirst('Exception: ', ''),
+          error: true,
+        );
+      }
+    }
+  }
+
   Future<void> _eliminar() async {
     final id = _producto['id_productos']?.toString();
     final nombre = _valor('nombre', 'este producto');
@@ -378,16 +428,39 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
             SizedBox(
               height: 52,
               child: ElevatedButton.icon(
-                onPressed: _procesando ? null : _editar,
-                icon: const Icon(Icons.edit_rounded),
+                onPressed: _procesando ? null : _agregarStock,
+                icon: const Icon(Icons.add_box_outlined),
                 label: const Text(
-                  'Editar producto',
+                  'Agregar stock',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: AppColors.fondo,
                   elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: _procesando ? null : _editar,
+                icon: const Icon(Icons.edit_rounded),
+                label: const Text(
+                  'Editar producto',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.accent,
+                  side: BorderSide(
+                    color: AppColors.accent.withValues(alpha: 0.4),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),

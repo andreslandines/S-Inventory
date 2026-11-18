@@ -4,7 +4,13 @@ import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/services/vencimiento_service.dart';
 
 class RegistrarEntradaPage extends StatefulWidget {
-  const RegistrarEntradaPage({super.key});
+  // Producto que se preselecciona al abrir la pantalla (opcional).
+  final Map<String, dynamic>? productoInicial;
+
+  const RegistrarEntradaPage({
+    super.key,
+    this.productoInicial,
+  });
 
   @override
   State<RegistrarEntradaPage> createState() => _RegistrarEntradaPageState();
@@ -48,6 +54,7 @@ class _RegistrarEntradaPageState extends State<RegistrarEntradaPage> {
 
       setState(() {
         _productos = productos;
+        _productoSeleccionado = _buscarProductoInicial(productos);
         _cargandoProductos = false;
       });
     } catch (e) {
@@ -59,6 +66,27 @@ class _RegistrarEntradaPageState extends State<RegistrarEntradaPage> {
 
       _mostrarMensaje('No se pudieron cargar los productos: $e', error: true);
     }
+  }
+
+  // Busca en la lista el producto que se quiso preseleccionar.
+  Map<String, dynamic>? _buscarProductoInicial(
+    List<Map<String, dynamic>> productos,
+  ) {
+    final inicial = widget.productoInicial;
+
+    if (inicial == null) return null;
+
+    final id = inicial['id_productos']?.toString();
+
+    if (id == null) return null;
+
+    for (final producto in productos) {
+      if (producto['id_productos']?.toString() == id) {
+        return producto;
+      }
+    }
+
+    return null;
   }
 
   Future<void> _seleccionarFecha() async {

@@ -250,8 +250,8 @@ class FormularioProducto {
     );
 
     final precio = TextEditingController(
-      text: ProductoCampoTexto.formatearMiles(
-        producto?['precio']?.toString() ?? '',
+      text: ProductoCampoTexto.formatearPrecio(
+        producto?['precio'],
       ),
     );
 
@@ -583,28 +583,49 @@ class FormularioProducto {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: ProductoCampoTexto(
-                                      controller: stock,
-                                      etiqueta: 'Stock inicial (máx. 100)',
-                                      icono: Icons.inventory_outlined,
-                                      teclado: TextInputType.number,
-                                      validator: (v) {
-                                        final s = int.tryParse(v ?? '');
+                                    child: editando
+                                        ? _campoSoloLectura(
+                                            etiqueta: 'Existencias',
+                                            valor: '${stock.text} unidades',
+                                            icono: Icons.inventory_outlined,
+                                          )
+                                        : ProductoCampoTexto(
+                                            controller: stock,
+                                            etiqueta:
+                                                'Stock inicial (máx. 100)',
+                                            icono: Icons.inventory_outlined,
+                                            teclado: TextInputType.number,
+                                            validator: (v) {
+                                              final s = int.tryParse(v ?? '');
 
-                                        if (s == null || s < 0) {
-                                          return 'Stock inválido';
-                                        }
+                                              if (s == null || s < 0) {
+                                                return 'Stock inválido';
+                                              }
 
-                                        if (s > 100) {
-                                          return 'Máximo 100 unidades';
-                                        }
+                                              if (s > 100) {
+                                                return 'Máximo 100 unidades';
+                                              }
 
-                                        return null;
-                                      },
-                                    ),
+                                              return null;
+                                            },
+                                          ),
                                   ),
                                 ],
                               ),
+
+                              // En edición las existencias no se escriben
+                              // directamente: se ajustan con una entrada.
+                              if (editando) ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Las existencias se cambian con "Agregar stock" '
+                                  '(registra una entrada con su lote y fecha).',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
 
                               // FECHA DE VENCIMIENTO DEL PRIMER LOTE (OPCIONAL)
                               if (!editando) ...[
@@ -985,6 +1006,24 @@ class FormularioProducto {
                 size: 13,
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Campo de solo lectura para mostrar datos que no se editan aquí.
+  static Widget _campoSoloLectura({
+    required String etiqueta,
+    required String valor,
+    required IconData icono,
+  }) {
+    return InputDecorator(
+      decoration: ProductoEstilos.campo(etiqueta, icono),
+      child: Text(
+        valor,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
         ),
       ),
     );

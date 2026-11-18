@@ -41,6 +41,22 @@ class ProductoCampoTexto extends StatelessWidget {
     return buffer.toString();
   }
 
+  // Formatea un precio para mostrarlo en el campo, conservando los
+  // decimales si el valor los tiene (evita corromper 2.5 como 25).
+  static String formatearPrecio(dynamic valor) {
+    final numero = double.tryParse(valor?.toString().trim() ?? '');
+
+    if (numero == null) return '';
+
+    if (numero == numero.roundToDouble()) {
+      return formatearMiles(numero.toStringAsFixed(0));
+    }
+
+    final partes = numero.toStringAsFixed(2).split('.');
+
+    return '${formatearMiles(partes[0])},${partes[1]}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
