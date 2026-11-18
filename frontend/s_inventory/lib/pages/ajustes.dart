@@ -298,8 +298,8 @@ class _AjustesState extends State<Ajustes> {
 
             _opcionInformacion(
               icono: Icons.menu_book_rounded,
-              titulo: 'Manual de usuario',
-              descripcion: 'Consulta la guía de S-Inventory',
+              titulo: 'Manual de ayuda',
+              descripcion: 'Consulta la guía de S-Inventory para ayudar al usuario',
               onTap: _abrirManual,
             ),
 
