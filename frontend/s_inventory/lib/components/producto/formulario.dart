@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:s_inventory/components/scanner/barcode_scanner_field.dart';
 import 'package:s_inventory/core/colores.dart';
+
 import 'producto_widgets.dart';
 import 'producto_campos.dart';
 import 'producto_imagen.dart';
@@ -233,27 +234,139 @@ class FormularioProducto {
   };
 
   static Future<Map<String, dynamic>?> mostrar(
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    Map<String, dynamic>? producto,
+  }) async {
+    final bool editando = producto != null;
+
     final formKey = GlobalKey<FormState>();
 
-    final nombre = TextEditingController();
-    final descripcion = TextEditingController();
-    final precio = TextEditingController();
-    final stock = TextEditingController(text: '0');
+    final nombre = TextEditingController(
+      text: producto?['nombre']?.toString() ?? '',
+    );
+
+    final descripcion = TextEditingController(
+      text: producto?['descripcion']?.toString() ?? '',
+    );
+
+    final precio = TextEditingController(
+      text: ProductoCampoTexto.formatearMiles(
+        producto?['precio']?.toString() ?? '',
+      ),
+    );
+
+    final stock = TextEditingController(
+      text: producto?['stock']?.toString() ?? '0',
+    );
+
+    final costoCaja = TextEditingController();
+    final unidadesCaja = TextEditingController();
+    final porcentajeGanancia = TextEditingController(
+      text: '30',
+    );
+
+    double? costoUnitarioCalculado;
+    double? precioSugeridoCalculado;
+    double? gananciaCalculada;
+
     final url = TextEditingController();
     final otroTipo = TextEditingController();
-    final codigoBarras = TextEditingController();
+
+    final codigoBarras = TextEditingController(
+      text: producto?['codigo_barras']?.toString() ?? '',
+    );
+
+    final imagenExistente =
+        producto?['imagen']?.toString() ?? '';
 
     XFile? imagen;
+
+    final partesCategoria =
+        (producto?['categoria']?.toString() ?? '').split(' - ');
+
     String? categoria;
+
+    if (editando &&
+        categorias.containsKey(partesCategoria.first.trim())) {
+      categoria = partesCategoria.first.trim();
+    }
+
+    final tipoOriginal = partesCategoria.length > 1
+        ? partesCategoria.sublist(1).join(' - ').trim()
+        : '';
+
     String? tipo;
+
+    // Fecha de vencimiento opcional del primer lote.
+    DateTime? fechaVencimiento;
+
+    if (categoria != null && tipoOriginal.isNotEmpty) {
+      final opciones = categorias[categoria] ?? [];
+
+      if (opciones.contains(tipoOriginal)) {
+        tipo = tipoOriginal;
+      } else {
+        tipo = 'Otro';
+        otroTipo.text = tipoOriginal;
+      }
+    }
+
     bool usarUrl = false;
 
-    String? requerido(String? valor) =>
-        valor == null || valor.trim().isEmpty
-            ? 'Este campo es obligatorio'
-            : null;
+    String? requerido(String? valor) {
+      if (valor == null || valor.trim().isEmpty) {
+        return 'Este campo es obligatorio';
+      }
+
+      return null;
+    }
+
+    void calcularPrecioSugerido(
+      void Function(void Function()) actualizar,
+    ) {
+      final costo = double.tryParse(
+        costoCaja.text
+            .replaceAll('.', '')
+            .replaceAll(',', '.')
+            .trim(),
+      );
+
+      final unidades = int.tryParse(
+        unidadesCaja.text.trim(),
+      );
+
+      final porcentaje = double.tryParse(
+        porcentajeGanancia.text.replaceAll(',', '.').trim(),
+      );
+
+      if (costo == null ||
+          costo <= 0 ||
+          unidades == null ||
+          unidades <= 0 ||
+          porcentaje == null ||
+          porcentaje < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Verifica el costo de la caja, las unidades y el porcentaje de ganancia.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      final costoUnitario = costo / unidades;
+      final precioSugerido =
+          (costoUnitario * (1 + porcentaje / 100)).roundToDouble();
+
+      actualizar(() {
+        costoUnitarioCalculado = costoUnitario;
+        precioSugeridoCalculado = precioSugerido;
+        gananciaCalculada =
+            precioSugerido - costoUnitario;
+      });
+    }
 
     try {
       return await showDialog<Map<String, dynamic>>(
@@ -309,7 +422,10 @@ class FormularioProducto {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _encabezado(dialogContext),
+                    _encabezado(
+                      dialogContext,
+                      editando: editando,
+                    ),
                     Container(
                       height: 1,
                       color: Colors.white10,
@@ -325,7 +441,8 @@ class FormularioProducto {
                         child: Form(
                           key: formKey,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
                             children: [
                               const ProductoSeccion(
                                 titulo: 'Imagen del producto',
@@ -335,6 +452,8 @@ class FormularioProducto {
                                 imagen: imagen,
                                 usarUrl: usarUrl,
                                 url: url.text,
+                                imagenExistente: imagenExistente,
+                                permitirCambiarModo: !editando,
                                 elegirGaleria: () =>
                                     elegirImagen(ImageSource.gallery),
                                 elegirCamara: () =>
@@ -386,15 +505,11 @@ class FormularioProducto {
                                 maxLineas: 2,
                               ),
                               const SizedBox(height: 12),
-
-                              // Campo reutilizable para escanear
-                              // o escribir el código de barras.
                               BarcodeScannerField(
                                 controller: codigoBarras,
                                 label: 'Código de barras',
                                 hint: 'Escanea o escribe el código',
                               ),
-
                               const ProductoSeccion(
                                 titulo: 'Categoría y tipo',
                                 icono: Icons.category_outlined,
@@ -451,13 +566,13 @@ class FormularioProducto {
                                       controller: precio,
                                       etiqueta: 'Precio *',
                                       icono: Icons.attach_money_rounded,
-                                      teclado:
-                                          const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
+                                      formatoMiles: true,
+                                      teclado: TextInputType.number,
                                       validator: (v) {
                                         final p = double.tryParse(
-                                          (v ?? '').replaceAll(',', '.'),
+                                          (v ?? '')
+                                              .replaceAll('.', '')
+                                              .replaceAll(',', '.'),
                                         );
 
                                         return p == null || p <= 0
@@ -470,60 +585,301 @@ class FormularioProducto {
                                   Expanded(
                                     child: ProductoCampoTexto(
                                       controller: stock,
-                                      etiqueta: 'Stock inicial',
+                                      etiqueta: 'Stock inicial (máx. 100)',
                                       icono: Icons.inventory_outlined,
                                       teclado: TextInputType.number,
                                       validator: (v) {
                                         final s = int.tryParse(v ?? '');
 
-                                        return s == null || s < 0
-                                            ? 'Stock inválido'
-                                            : null;
+                                        if (s == null || s < 0) {
+                                          return 'Stock inválido';
+                                        }
+
+                                        if (s > 100) {
+                                          return 'Máximo 100 unidades';
+                                        }
+
+                                        return null;
                                       },
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 22),
-                              _botonGuardar(() {
-                                if (!formKey.currentState!.validate()) {
-                                  return;
-                                }
 
-                                if (!usarUrl && imagen == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Selecciona una imagen o utiliza una URL.',
+                              // FECHA DE VENCIMIENTO DEL PRIMER LOTE (OPCIONAL)
+                              if (!editando) ...[
+                                const SizedBox(height: 12),
+                                _campoFechaVencimiento(
+                                  fecha: fechaVencimiento,
+                                  onSeleccionar: () async {
+                                    final hoy = DateTime.now();
+
+                                    final elegida = await showDatePicker(
+                                      context: context,
+                                      initialDate: fechaVencimiento ?? hoy,
+                                      firstDate: DateTime(
+                                        hoy.year,
+                                        hoy.month,
+                                        hoy.day,
                                       ),
-                                      behavior: SnackBarBehavior.floating,
+                                      lastDate: DateTime(hoy.year + 20),
+                                      helpText:
+                                          'Fecha de vencimiento del primer lote',
+                                      cancelText: 'Cancelar',
+                                      confirmText: 'Aceptar',
+                                    );
+
+                                    if (elegida != null) {
+                                      actualizar(() {
+                                        fechaVencimiento = elegida;
+                                      });
+                                    }
+                                  },
+                                  onLimpiar: () => actualizar(() {
+                                    fechaVencimiento = null;
+                                  }),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'La fecha es opcional. Si no la conoces, puedes registrar el lote sin fecha.',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+
+                              // CÁLCULO OPCIONAL DE PRECIO POR CAJA
+                              if (!editando) ...[
+                                const SizedBox(height: 20),
+                                const ProductoSeccion(
+                                  titulo: 'Cálculo de precio por caja',
+                                  icono: Icons.calculate_outlined,
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    'Calcula cuánto cuesta cada unidad y obtén un precio de venta sugerido. Esta sección es opcional.',
+                                    style: TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 12,
                                     ),
-                                  );
-                                  return;
-                                }
+                                  ),
+                                ),
+                                ProductoCampoTexto(
+                                  controller: costoCaja,
+                                  etiqueta: 'Costo de compra de la caja',
+                                  icono: Icons.inventory_2_outlined,
+                                  formatoMiles: true,
+                                  teclado: TextInputType.number,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: ProductoCampoTexto(
+                                        controller: unidadesCaja,
+                                        etiqueta: 'Unidades por caja',
+                                        icono: Icons.numbers_rounded,
+                                        teclado: TextInputType.number,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: ProductoCampoTexto(
+                                        controller: porcentajeGanancia,
+                                        etiqueta: 'Ganancia (%)',
+                                        icono: Icons.trending_up_rounded,
+                                        teclado:
+                                            const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 46,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () =>
+                                        calcularPrecioSugerido(actualizar),
+                                    icon: const Icon(
+                                      Icons.calculate_outlined,
+                                    ),
+                                    label: const Text(
+                                      'Calcular precio sugerido',
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: productoAmarillo,
+                                      side: BorderSide(
+                                        color: productoAmarillo
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (precioSugeridoCalculado != null) ...[
+                                  const SizedBox(height: 14),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(15),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.045,
+                                      ),
+                                      borderRadius:
+                                          BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: productoAmarillo.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Resultado del cálculo',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        _filaCalculo(
+                                          'Costo por unidad',
+                                          costoUnitarioCalculado!,
+                                        ),
+                                        const SizedBox(height: 7),
+                                        _filaCalculo(
+                                          'Ganancia por unidad',
+                                          gananciaCalculada!,
+                                        ),
+                                        const Divider(
+                                          color: Colors.white24,
+                                          height: 22,
+                                        ),
+                                        const Text(
+                                          'Precio de venta sugerido',
+                                          style: TextStyle(
+                                            color: Colors.white60,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '\$ ${ProductoCampoTexto.formatearMiles(
+                                            precioSugeridoCalculado!
+                                                .toStringAsFixed(0),
+                                          )}',
+                                          style: const TextStyle(
+                                            color: productoAmarillo,
+                                            fontSize: 23,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            onPressed: () {
+                                              precio.text =
+                                                  ProductoCampoTexto
+                                                      .formatearMiles(
+                                                precioSugeridoCalculado!
+                                                    .toStringAsFixed(0),
+                                              );
 
-                                final tipoFinal = tipo == 'Otro'
-                                    ? otroTipo.text.trim()
-                                    : tipo!;
+                                              actualizar(() {});
+                                            },
+                                            icon: const Icon(
+                                              Icons.check_circle_outline,
+                                            ),
+                                            label: const Text(
+                                              'Usar este precio',
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  productoAmarillo,
+                                              foregroundColor:
+                                                  const Color(0xFF0E2136),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
 
-                                Navigator.pop(dialogContext, {
-                                  'nombre': nombre.text.trim(),
-                                  'descripcion': descripcion.text.trim(),
-                                  'codigoBarras':
-                                      codigoBarras.text.trim().isEmpty
-                                          ? null
-                                          : codigoBarras.text.trim(),
-                                  'precio': precio.text
-                                      .replaceAll(',', '.')
-                                      .trim(),
-                                  'categoria': '$categoria - $tipoFinal',
-                                  'tipoProducto': tipoFinal,
-                                  'stock': stock.text.trim(),
-                                  'imagen': imagen,
-                                  'imagenUrl':
-                                      usarUrl ? url.text.trim() : null,
-                                });
-                              }),
+                              const SizedBox(height: 22),
+                              _botonGuardar(
+                                () {
+                                  if (!formKey.currentState!.validate()) {
+                                    return;
+                                  }
+
+                                  if (!editando &&
+                                      !usarUrl &&
+                                      imagen == null) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Selecciona una imagen o utiliza una URL.',
+                                        ),
+                                        behavior:
+                                            SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  final tipoFinal = tipo == 'Otro'
+                                      ? otroTipo.text.trim()
+                                      : tipo!;
+
+                                  Navigator.pop(dialogContext, {
+                                    'nombre': nombre.text.trim(),
+                                    'descripcion':
+                                        descripcion.text.trim(),
+                                    'codigoBarras':
+                                        codigoBarras.text.trim().isEmpty
+                                            ? null
+                                            : codigoBarras.text.trim(),
+                                    'precio': precio.text
+                                        .replaceAll('.', '')
+                                        .replaceAll(',', '.')
+                                        .trim(),
+                                    'categoria':
+                                        '$categoria - $tipoFinal',
+                                    'tipoProducto': tipoFinal,
+                                    'stock': stock.text.trim(),
+                                    'fechaVencimiento':
+                                        fechaVencimiento == null
+                                            ? null
+                                            : _fechaParaBackend(
+                                                fechaVencimiento!,
+                                              ),
+                                    'imagen': imagen,
+                                    'imagenUrl':
+                                        usarUrl ? url.text.trim() : null,
+                                  });
+                                },
+                                texto: editando
+                                    ? 'Guardar cambios'
+                                    : 'Guardar producto',
+                              ),
                               const SizedBox(height: 8),
                               SizedBox(
                                 width: double.infinity,
@@ -539,7 +895,8 @@ class FormularioProducto {
                                       ),
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
+                                      borderRadius:
+                                          BorderRadius.circular(14),
                                     ),
                                   ),
                                   child: const Text('Cancelar'),
@@ -557,22 +914,114 @@ class FormularioProducto {
           },
         ),
       );
-} finally {
-  // Esperar a que Flutter termine el ciclo de reconstrucción
-  // y retire el diálogo antes de eliminar sus controladores.
-  await WidgetsBinding.instance.endOfFrame;
+    } finally {
+      await WidgetsBinding.instance.endOfFrame;
 
-  nombre.dispose();
-  descripcion.dispose();
-  precio.dispose();
-  stock.dispose();
-  url.dispose();
-  otroTipo.dispose();
-  codigoBarras.dispose();
-}
+      nombre.dispose();
+      descripcion.dispose();
+      precio.dispose();
+      stock.dispose();
+      costoCaja.dispose();
+      unidadesCaja.dispose();
+      porcentajeGanancia.dispose();
+      url.dispose();
+      otroTipo.dispose();
+      codigoBarras.dispose();
+    }
   }
 
-  static Widget _encabezado(BuildContext context) {
+  // Formatea una fecha como YYYY-MM-DD para el backend.
+  static String _fechaParaBackend(DateTime fecha) {
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+
+    return '${fecha.year}-$mes-$dia';
+  }
+
+  // Campo opcional para la fecha de vencimiento del primer lote.
+  static Widget _campoFechaVencimiento({
+    required DateTime? fecha,
+    required VoidCallback onSeleccionar,
+    required VoidCallback onLimpiar,
+  }) {
+    final texto = fecha == null
+        ? 'Sin fecha'
+        : '${fecha.day.toString().padLeft(2, '0')}/'
+            '${fecha.month.toString().padLeft(2, '0')}/'
+            '${fecha.year}';
+
+    return InkWell(
+      onTap: onSeleccionar,
+      borderRadius: BorderRadius.circular(14),
+      child: InputDecorator(
+        decoration: ProductoEstilos.campo(
+          'Fecha de vencimiento del primer lote',
+          Icons.calendar_month_outlined,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                texto,
+                style: TextStyle(
+                  color: fecha == null ? Colors.white38 : Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (fecha != null)
+              GestureDetector(
+                onTap: onLimpiar,
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white54,
+                  size: 18,
+                ),
+              )
+            else
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white38,
+                size: 13,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _filaCalculo(
+    String titulo,
+    double valor,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          titulo,
+          style: const TextStyle(
+            color: Colors.white60,
+            fontSize: 12,
+          ),
+        ),
+        Text(
+          '\$ ${ProductoCampoTexto.formatearMiles(
+            valor.round().toString(),
+          )}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _encabezado(
+    BuildContext context, {
+    bool editando = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 18, 12, 18),
       child: Row(
@@ -583,29 +1032,35 @@ class FormularioProducto {
               color: productoAmarillo.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
-              Icons.inventory_2_rounded,
+            child: Icon(
+              editando
+                  ? Icons.edit_rounded
+                  : Icons.inventory_2_rounded,
               color: productoAmarillo,
               size: 25,
             ),
           ),
           const SizedBox(width: 13),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Registrar producto',
-                  style: TextStyle(
+                  editando
+                      ? 'Editar producto'
+                      : 'Registrar producto',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Agrega un producto a tu inventario',
-                  style: TextStyle(
+                  editando
+                      ? 'Actualiza la información del producto'
+                      : 'Agrega un producto a tu inventario',
+                  style: const TextStyle(
                     color: Colors.white60,
                     fontSize: 11,
                   ),
@@ -625,16 +1080,19 @@ class FormularioProducto {
     );
   }
 
-  static Widget _botonGuardar(VoidCallback accion) {
+  static Widget _botonGuardar(
+    VoidCallback accion, {
+    String texto = 'Guardar producto',
+  }) {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
         onPressed: accion,
         icon: const Icon(Icons.save_rounded),
-        label: const Text(
-          'Guardar producto',
-          style: TextStyle(
+        label: Text(
+          texto,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 15,
           ),

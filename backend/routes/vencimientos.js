@@ -1,32 +1,57 @@
+
 import express from "express";
 
-import { listarVencimientos, obtenerVencimiento, registrarVencimiento ,
-editarVencimiento, borrarVencimiento, listarProximosAVencer} from "../controllers/vencimientos.js";
+import {
+    listarVencimientos,
+    obtenerVencimiento,
+    registrarVencimiento,
+    editarVencimiento,
+    borrarVencimiento,
+    listarProximosAVencer,
+    listarLotesVencidos
+} from "../controllers/vencimientos.js";
+
+import {
+    verificarToken,
+    verificarAdmin
+} from "../middlewares/authmiddlewares.js";
 
 const router = express.Router();
 
-
-// Obtener todos los vencimientos
+// Obtener todos los lotes
 router.get("/", listarVencimientos);
 
-
-// Obtener próximos a vencer
+// Obtener lotes próximos a vencer
 router.get("/proximos", listarProximosAVencer);
 
-// Obtener un vencimiento por ID
+// Obtener lotes ya vencidos
+router.get("/vencidos", listarLotesVencidos);
+
+// Obtener un lote por ID
 router.get("/:id_vencimiento", obtenerVencimiento);
 
+// Registrar una nueva entrada de inventario
+router.post(
+    "/registrar",
+    verificarToken,
+    verificarAdmin,
+    registrarVencimiento
+);
 
-// Registrar un vencimiento
-router.post("/registrar", registrarVencimiento);
+// Actualizar la fecha de un lote
+router.put(
+    "/actualizar/:id_vencimiento",
+    verificarToken,
+    verificarAdmin,
+    editarVencimiento
+);
 
-
-// Actualizar un vencimiento
-router.put("/actualizar/:id_vencimiento", editarVencimiento);
-
-
-// Eliminar un vencimiento
-router.delete("/eliminar/:id_vencimiento", borrarVencimiento);
-
+// No permite eliminar lotes directamente
+router.delete(
+    "/eliminar/:id_vencimiento",
+    verificarToken,
+    verificarAdmin,
+    borrarVencimiento
+);
 
 export default router;

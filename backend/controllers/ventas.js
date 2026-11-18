@@ -1,8 +1,17 @@
 
-import {obtenerVentas, obtenerVentaPorId, obtenerDetallesVenta, crearVenta,
-     crearDetalleVenta, actualizarStock, crearMovimiento} from "../models/ventas.js";
+import {
+    obtenerVentas,
+    obtenerVentaPorId,
+    obtenerDetallesVenta,
+    registrarVentaFefo
+} from "../models/ventas.js";
+
 import { obtenerPorId } from "../models/productos.js";
 import { enviarCorreoVenta } from "../utils/sendEmail.js";
+
+// ==========================================
+// LISTAR TODAS LAS VENTAS
+// ==========================================
 
 export const listarVentas = async (req, res) => {
     try {
@@ -10,6 +19,7 @@ export const listarVentas = async (req, res) => {
 
         if (error) {
             console.error("Error al obtener las ventas:", error);
+
             return res.status(500).json({
                 error: "Error al obtener las ventas",
                 detalle: error.message
@@ -17,12 +27,19 @@ export const listarVentas = async (req, res) => {
         }
 
         return res.status(200).json(data);
+
     } catch (error) {
         console.error("Error en listarVentas:", error);
-        return res.status(500).json({ error: error.message });
+
+        return res.status(500).json({
+            error: error.message
+        });
     }
 };
 
+// ==========================================
+// OBTENER UNA VENTA Y SUS DETALLES
+// ==========================================
 
 export const obtenerVenta = async (req, res) => {
     try {
@@ -41,7 +58,10 @@ export const obtenerVenta = async (req, res) => {
             await obtenerDetallesVenta(id_venta);
 
         if (errorDetalles) {
-            console.error("Error al obtener los detalles:", errorDetalles);
+            console.error(
+                "Error al obtener los detalles:",
+                errorDetalles
+            );
 
             return res.status(500).json({
                 error: "Error al obtener los detalles de la venta",
@@ -49,7 +69,7 @@ export const obtenerVenta = async (req, res) => {
             });
         }
 
-        // Obtener el nombre de cada producto usando su ID.
+        // Consultar el nombre de cada producto
         const detallesConProductos = await Promise.all(
             (detalles || []).map(async (detalle) => {
                 const { data: producto, error: errorProducto } =
@@ -65,7 +85,8 @@ export const obtenerVenta = async (req, res) => {
                 return {
                     ...detalle,
                     nombre_producto:
-                        producto?.nombre || `Producto ${detalle.id_producto}`
+                        producto?.nombre ||
+                        `Producto ${detalle.id_producto}`
                 };
             })
         );
@@ -87,185 +108,146 @@ export const obtenerVenta = async (req, res) => {
     }
 };
 
+// ==========================================
+// REGISTRAR VENTA CON SISTEMA FEFO
+// ==========================================
 
 export const registrarVenta = async (req, res) => {
     try {
         const { id_usuario, productos } = req.body;
 
-        if (!id_usuario) {
+        // Validar usuario
+        const usuarioId = Number(id_usuario);
+
+        if (
+            !Number.isSafeInteger(usuarioId) ||
+            usuarioId <= 0
+        ) {
             return res.status(400).json({
-                error: "El id_usuario es requerido"
+                error: "El id_usuario es obligatorio y debe ser válido"
             });
         }
 
-        if (!productos || !Array.isArray(productos) || productos.length === 0) {
+        // Validar productos
+        if (
+            !Array.isArray(productos) ||
+            productos.length === 0
+        ) {
             return res.status(400).json({
                 error: "Debe enviar al menos un producto"
             });
         }
 
-        let total = 0;
-        const detalles = [];
+        // Normalizar y validar cada producto
+        const productosValidados = [];
 
         for (const item of productos) {
-            const { id_productos, cantidad } = item;
+            const idProducto = Number(item.id_productos);
+            const cantidad = Number(item.cantidad);
 
-            if (!id_productos) {
+            if (
+                !Number.isSafeInteger(idProducto) ||
+                idProducto <= 0
+            ) {
                 return res.status(400).json({
-                    error: "El id_productos es requerido"
+                    error: "Hay un identificador de producto inválido"
                 });
             }
 
-            if (!cantidad || cantidad <= 0) {
+            if (
+                !Number.isSafeInteger(cantidad) ||
+                cantidad <= 0
+            ) {
                 return res.status(400).json({
-                    error: "La cantidad debe ser mayor a 0"
+                    error: `La cantidad del producto ${idProducto} debe ser un entero mayor a cero`
                 });
             }
 
-            const { data: producto, error } = await obtenerPorId(id_productos);
-
-            if (error) {
-                console.error("Error al buscar producto:", error);
-                return res.status(500).json({
-                    error: "Error al buscar el producto",
-                    detalle: error.message
-                });
-            }
-
-            if (!producto) {
-                return res.status(404).json({
-                    error: `Producto ${id_productos} no encontrado`
-                });
-            }
-
-            if (producto.stock < cantidad) {
-                return res.status(400).json({
-                    error: `Stock insuficiente para el producto ${producto.nombre}`,
-                    stock_disponible: producto.stock,
-                    cantidad_solicitada: cantidad
-                });
-            }
-
-            const subtotal = Number(producto.precio) * Number(cantidad);
-            total += subtotal;
-
-            detalles.push({
-                id_producto: producto.id_productos,
-                cantidad,
-                precio_unitario: producto.precio
+            productosValidados.push({
+                id_productos: idProducto,
+                cantidad: cantidad
             });
         }
 
-        console.log("Total de la venta:", total);
-        console.log("Detalles:", detalles);
+        console.log("Registrando venta mediante FEFO...");
+        console.log("Usuario:", usuarioId);
+        console.log("Productos:", productosValidados);
 
-        const { data: venta, error: errorVenta } = await crearVenta({
-            id_usuario,
-            total
-        });
+        // La función SQL realiza en una sola transacción:
+        // - Creación de la venta.
+        // - Registro de los detalles.
+        // - Descuento de los lotes FEFO.
+        // - Actualización del stock general.
+        // - Registro de movimientos.
+        // - Registro de trazabilidad de lotes.
 
-        if (errorVenta) {
-            console.error("Error al crear la venta:", errorVenta);
+        const { data, error } = await registrarVentaFefo(
+            usuarioId,
+            productosValidados
+        );
+
+        if (error) {
+            console.error(
+                "Error al registrar venta FEFO:",
+                error
+            );
+
+            const codigoEstado =
+                error.code === "P0001" ? 400 : 500;
+
+            return res.status(codigoEstado).json({
+                error: "No fue posible registrar la venta",
+                detalle: error.message
+            });
+        }
+
+        // Comprobar respuesta de la función SQL
+        const venta = data?.venta;
+        const detalles = data?.detalles;
+
+        if (!venta || !venta.id_venta) {
+            console.error(
+                "La función FEFO no devolvió los datos esperados:",
+                data
+            );
+
             return res.status(500).json({
-                error: "Error al guardar la venta",
-                detalle: errorVenta.message
+                error: "La venta fue procesada, pero la respuesta de la base de datos no tiene el formato esperado"
             });
         }
 
-        const detallesVenta = detalles.map(detalle => ({
-            id_venta: venta.id_venta,
-            id_producto: detalle.id_producto,
-            cantidad: detalle.cantidad,
-            precio_unitario: detalle.precio_unitario
-        }));
-
-        for (const detalle of detallesVenta) {
-            const { error } = await crearDetalleVenta(detalle);
-
-            if (error) {
-                console.error("Error al crear detalle de venta:", error);
-                return res.status(500).json({
-                    error: "La venta fue creada pero hubo un error al guardar los detalles",
-                    detalle: error.message
-                });
-            }
-        }
-
-        for (const item of productos) {
-            const { id_productos, cantidad } = item;
-
-            const { data: producto, error: errorProducto } =
-                await obtenerPorId(id_productos);
-
-            if (errorProducto) {
-                console.error("Error al buscar producto para stock:", errorProducto);
-                return res.status(500).json({
-                    error: "Error al buscar el producto para actualizar stock",
-                    detalle: errorProducto.message
-                });
-            }
-
-            if (!producto) {
-                return res.status(404).json({
-                    error: `Producto ${id_productos} no encontrado`
-                });
-            }
-
-            const nuevoStock =
-                Number(producto.stock) - Number(cantidad);
-
-            const { error: errorStock } =
-                await actualizarStock(id_productos, nuevoStock);
-
-            if (errorStock) {
-                console.error("Error al actualizar el stock:", errorStock);
-                return res.status(500).json({
-                    error: "Error al actualizar el stock",
-                    detalle: errorStock.message
-                });
-            }
-
-            console.log(
-                `Producto ${id_productos}: stock actualizado a ${nuevoStock}`
-            );
-
-            const { error: errorMovimiento } =
-                await crearMovimiento({
-                    id_producto: id_productos,
-                    tipo: "salida",
-                    cantidad,
-                    id_venta: venta.id_venta
-                });
-
-            if (errorMovimiento) {
-                console.error(
-                    "Error al registrar movimiento:",
-                    errorMovimiento
-                );
-
-                return res.status(500).json({
-                    error: "El stock fue actualizado pero no se pudo registrar el movimiento",
-                    detalle: errorMovimiento.message
-                });
-            }
-
-            console.log(
-                `Movimiento registrado: producto ${id_productos}, cantidad ${cantidad}`
-            );
-        }
-
+        // Enviar correo después de completar la transacción
         try {
             await enviarCorreoVenta(
                 venta.id_venta,
                 venta.id_usuario,
                 venta.total
             );
+
+            console.log(
+                "Correo de venta enviado correctamente"
+            );
+
         } catch (errorCorreo) {
             console.error(
                 "Error enviando correo de venta:",
                 errorCorreo
             );
         }
+
+        // Mantener la estructura de respuesta utilizada por Flutter
+        const detallesRespuesta = (detalles || []).map(
+            (detalle) => ({
+                id_venta: venta.id_venta,
+                id_producto: detalle.id_producto,
+                cantidad: detalle.cantidad,
+                precio_unitario: detalle.precio_unitario
+            })
+        );
+
+        console.log(
+            `Venta ${venta.id_venta} registrada correctamente mediante FEFO`
+        );
 
         return res.status(201).json({
             message: "Venta registrada correctamente",
@@ -274,13 +256,18 @@ export const registrarVenta = async (req, res) => {
                 id_usuario: venta.id_usuario,
                 total: venta.total
             },
-            detalles: detallesVenta
+            detalles: detallesRespuesta
         });
+
     } catch (error) {
-        console.error("Error al registrar venta:", error);
+        console.error(
+            "Error al registrar venta:",
+            error
+        );
+
         return res.status(500).json({
-            error: error.message
+            error: "Error interno al registrar la venta",
+            detalle: error.message
         });
     }
 };
-

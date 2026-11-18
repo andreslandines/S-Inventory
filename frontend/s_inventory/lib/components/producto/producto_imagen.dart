@@ -11,6 +11,9 @@ class ProductoSelectorImagen extends StatelessWidget {
   final XFile? imagen;
   final bool usarUrl;
   final String url;
+  final String? imagenExistente;
+  final bool permitirCambiarModo;
+
   final VoidCallback elegirGaleria;
   final VoidCallback elegirCamara;
   final VoidCallback cambiarModo;
@@ -20,6 +23,8 @@ class ProductoSelectorImagen extends StatelessWidget {
     required this.imagen,
     required this.usarUrl,
     required this.url,
+    this.imagenExistente,
+    this.permitirCambiarModo = true,
     required this.elegirGaleria,
     required this.elegirCamara,
     required this.cambiarModo,
@@ -62,20 +67,21 @@ class ProductoSelectorImagen extends StatelessWidget {
             ),
           ],
         ),
-        TextButton.icon(
-          onPressed: cambiarModo,
-          icon: Icon(
-            usarUrl ? Icons.upload_file : Icons.link_rounded,
-            color: productoAmarillo,
-            size: 18,
+        if (permitirCambiarModo)
+          TextButton.icon(
+            onPressed: cambiarModo,
+            icon: Icon(
+              usarUrl ? Icons.upload_file : Icons.link_rounded,
+              color: productoAmarillo,
+              size: 18,
+            ),
+            label: Text(
+              usarUrl
+                  ? 'Elegir archivo o fotografía'
+                  : 'Usar URL de imagen',
+              style: const TextStyle(color: productoAmarillo),
+            ),
           ),
-          label: Text(
-            usarUrl
-                ? 'Elegir archivo o fotografía'
-                : 'Usar URL de imagen',
-            style: const TextStyle(color: productoAmarillo),
-          ),
-        ),
       ],
     );
   }
@@ -93,9 +99,7 @@ class ProductoSelectorImagen extends StatelessWidget {
       return FutureBuilder<Uint8List>(
         future: imagen!.readAsBytes(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return _imagenVacia();
-          }
+          if (snapshot.hasError) return _imagenVacia();
 
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(
@@ -117,6 +121,16 @@ class ProductoSelectorImagen extends StatelessWidget {
             errorBuilder: (_, __, ___) => _imagenVacia(),
           );
         },
+      );
+    }
+
+    final existente = imagenExistente?.trim() ?? '';
+
+    if (existente.isNotEmpty) {
+      return Image.network(
+        existente,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _imagenVacia(),
       );
     }
 

@@ -3,10 +3,46 @@ import {
   obtenerTodos,
   obtenerPorId,
   obtenerPorCategoria,
-  crearproductos,
+  crearProductoConLote,
   actualizarproductos,
   eliminarproductos,
 } from '../models/productos.js';
+
+// Fecha actual de Colombia (YYYY-MM-DD).
+const obtenerFechaColombia = () => {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Bogota',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+
+  const obtener = (tipo) =>
+    partes.find((parte) => parte.type === tipo)?.value;
+
+  return `${obtener('year')}-${obtener('month')}-${obtener('day')}`;
+};
+
+// Valida que una fecha YYYY-MM-DD exista realmente.
+const validarFecha = (fecha) => {
+  if (typeof fecha !== 'string') return false;
+
+  const coincidencia = fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!coincidencia) return false;
+
+  const anio = Number(coincidencia[1]);
+  const mes = Number(coincidencia[2]);
+  const dia = Number(coincidencia[3]);
+
+  const fechaUTC = new Date(Date.UTC(anio, mes - 1, dia));
+
+  return (
+    fechaUTC.getUTCFullYear() === anio &&
+    fechaUTC.getUTCMonth() === mes - 1 &&
+    fechaUTC.getUTCDate() === dia
+  );
+};
 
 // LISTAR PRODUCTOS
 export const listarproductos = async (req, res) => {
@@ -14,8 +50,10 @@ export const listarproductos = async (req, res) => {
     const { data, error } = await obtenerTodos();
 
     if (error) {
+      console.error('Error al listar productos:', error);
+
       return res.status(500).json({
-        error: 'Error al obtener',
+        error: 'Error al obtener productos',
       });
     }
 
@@ -36,7 +74,7 @@ export const obtenerproductos = async (req, res) => {
 
     if (error || !data) {
       return res.status(404).json({
-        error: 'No encontrado',
+        error: 'Producto no encontrado',
       });
     }
 
@@ -56,8 +94,10 @@ export const obtenerPorCat = async (req, res) => {
     const { data, error } = await obtenerPorCategoria(categoria);
 
     if (error) {
+      console.error('Error al buscar por categoría:', error);
+
       return res.status(500).json({
-        error: 'Error',
+        error: 'Error al obtener productos por categoría',
       });
     }
 
@@ -69,12 +109,8 @@ export const obtenerPorCat = async (req, res) => {
   }
 };
 
-// REGISTRAR PRODUCTO
+// REGISTRAR PRODUCTO CON SU PRIMER LOTE
 export const crear = async (req, res) => {
-  console.log('========== REGISTRO DE PRODUCTO ==========');
-console.log('BODY COMPLETO:', req.body);
-console.log('CÓDIGO DE BARRAS RECIBIDO:', req.body.codigo_barras);
-console.log('==========================================');
   try {
     const {
       nombre,
@@ -84,15 +120,34 @@ console.log('==========================================');
       stock,
       imagen_url,
       codigo_barras,
+      fecha_vencimiento,
     } = req.body;
 
     const imagen = req.file?.path || imagen_url;
-    console.log('DATOS RECIBIDOS:', req.body);
-console.log('CODIGO DE BARRAS:', req.body.codigo_barras);
 
+    // Validaciones básicas
     if (!nombre?.trim() || !precio || !imagen) {
       return res.status(400).json({
-        error: 'nombre, precio e imagen requeridos',
+        error: 'Nombre, precio e imagen son obligatorios',
+      });
+    }
+
+    const precioNumerico = Number(precio);
+    const stockInicial = Number(stock ?? 0);
+
+    if (!Number.isFinite(precioNumerico) || precioNumerico <= 0) {
+      return res.status(400).json({
+        error: 'El precio debe ser mayor a cero',
+      });
+    }
+
+    if (
+      !Number.isInteger(stockInicial) ||
+      stockInicial < 0 ||
+      stockInicial > 100
+    ) {
+      return res.status(400).json({
+        error: 'El stock inicial debe ser un número entero entre 0 y 100',
       });
     }
 
@@ -117,29 +172,46 @@ console.log('CODIGO DE BARRAS:', req.body.codigo_barras);
         });
       }
     }
-    console.log('DATOS QUE SE ENVIARÁN A SUPABASE:', {
-  nombre: nombre.trim(),
-  descripcion,
-  precio,
-  categoria,
-  stock: stock ?? 0,
-  imagen,
-  codigo_barras: codigo_barras?.trim() || null,
-});
 
+    // Fecha de vencimiento opcional del primer lote.
+    let fechaVencimiento = null;
 
-    const { data, error } = await crearproductos({
+    if (
+      fecha_vencimiento !== undefined &&
+      fecha_vencimiento !== null &&
+      String(fecha_vencimiento).trim() !== ''
+    ) {
+      const fecha = String(fecha_vencimiento).trim();
+
+      if (!validarFecha(fecha)) {
+        return res.status(400).json({
+          error: 'La fecha de vencimiento no es válida. Use YYYY-MM-DD',
+        });
+      }
+
+      if (fecha < obtenerFechaColombia()) {
+        return res.status(400).json({
+          error: 'No se puede registrar un lote con fecha de vencimiento pasada',
+        });
+      }
+
+      fechaVencimiento = fecha;
+    }
+
+    // Producto y primer lote se registran mediante una sola función SQL.
+    const { data, error } = await crearProductoConLote({
       nombre: nombre.trim(),
       descripcion,
-      precio,
+      precio: precioNumerico,
       categoria,
-      stock: stock ?? 0,
+      stock: stockInicial,
       imagen,
       codigo_barras: codigo_barras?.trim() || null,
+      fecha_vencimiento: fechaVencimiento,
     });
 
     if (error) {
-      console.error('Error al crear producto:', error);
+      console.error('Error al crear producto con lote:', error);
 
       if (error.code === '23505') {
         return res.status(409).json({
@@ -147,14 +219,21 @@ console.log('CODIGO DE BARRAS:', req.body.codigo_barras);
         });
       }
 
+      if (error.code === 'P0001') {
+        return res.status(400).json({
+          error: error.message,
+        });
+      }
+
       return res.status(500).json({
-        error: 'Error al crear producto',
+        error: 'Error al crear el producto',
       });
     }
 
     return res.status(201).json({
-      message: 'Creado',
-      producto: data?.[0],
+      message: 'Producto registrado correctamente',
+      producto: data?.producto,
+      lote: data?.lote ?? null,
     });
   } catch (error) {
     console.error('Error al registrar producto:', error);
@@ -165,7 +244,7 @@ console.log('CODIGO DE BARRAS:', req.body.codigo_barras);
   }
 };
 
-// EDITAR PRODUCTO
+// EDITAR PRODUCTO SIN MODIFICAR EL STOCK
 export const editar = async (req, res) => {
   try {
     const { id_productos } = req.params;
@@ -175,17 +254,15 @@ export const editar = async (req, res) => {
       descripcion,
       precio,
       categoria,
-      stock,
       codigo_barras,
     } = req.body;
 
-    // Construimos los datos que se van a actualizar.
+    // El stock no se recibe ni se actualiza desde esta operación.
     const productosData = {
       nombre: nombre?.trim(),
       descripcion,
       precio,
       categoria,
-      stock,
       codigo_barras: codigo_barras?.trim() || null,
     };
 
@@ -216,7 +293,7 @@ export const editar = async (req, res) => {
       }
 
       return res.status(500).json({
-        error: 'Error al actualizar',
+        error: 'Error al actualizar el producto',
       });
     }
 
@@ -227,7 +304,7 @@ export const editar = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: 'Actualizado',
+      message: 'Producto actualizado correctamente',
       productos: data[0],
     });
   } catch (error) {

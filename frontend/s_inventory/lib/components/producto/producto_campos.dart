@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'producto_widgets.dart';
 
@@ -9,6 +10,7 @@ class ProductoCampoTexto extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputType? teclado;
   final int maxLineas;
+  final bool formatoMiles;
 
   const ProductoCampoTexto({
     super.key,
@@ -18,7 +20,26 @@ class ProductoCampoTexto extends StatelessWidget {
     this.validator,
     this.teclado,
     this.maxLineas = 1,
+    this.formatoMiles = false,
   });
+
+  static String formatearMiles(String valor) {
+    final digitos = valor.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (digitos.isEmpty) return '';
+
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < digitos.length; i++) {
+      if (i > 0 && (digitos.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+
+      buffer.write(digitos[i]);
+    }
+
+    return buffer.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +52,28 @@ class ProductoCampoTexto extends StatelessWidget {
       keyboardType: teclado,
       maxLines: maxLineas,
       validator: validator,
-      decoration: ProductoEstilos.campo(etiqueta, icono),
+      inputFormatters: formatoMiles
+          ? [
+              TextInputFormatter.withFunction(
+                (oldValue, newValue) {
+                  final formateado = formatearMiles(
+                    newValue.text,
+                  );
+
+                  return TextEditingValue(
+                    text: formateado,
+                    selection: TextSelection.collapsed(
+                      offset: formateado.length,
+                    ),
+                  );
+                },
+              ),
+            ]
+          : null,
+      decoration: ProductoEstilos.campo(
+        etiqueta,
+        icono,
+      ),
     );
   }
 }
@@ -92,7 +134,6 @@ class ProductoCampoSelector extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Encabezado
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                     18,
@@ -153,13 +194,10 @@ class ProductoCampoSelector extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 Divider(
                   height: 1,
                   color: Colors.white.withOpacity(0.10),
                 ),
-
-                // Opciones disponibles
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
@@ -231,7 +269,6 @@ class ProductoCampoSelector extends StatelessWidget {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 8),
               ],
             ),
@@ -276,8 +313,6 @@ class ProductoCampoSelector extends StatelessWidget {
                 color: productoAmarillo,
               ),
             ),
-            // La etiqueta se dibuja desde InputDecoration.
-            // No repetirla dentro del contenido del selector.
             child: Text(
               seleccionValida ? field.value! : '',
               overflow: TextOverflow.ellipsis,

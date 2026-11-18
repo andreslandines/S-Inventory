@@ -38,7 +38,6 @@ class _DialogoEditarProductoState
   late final TextEditingController _descripcion;
   late final TextEditingController _precio;
   late final TextEditingController _categoria;
-  late final TextEditingController _stock;
   late final TextEditingController _codigoBarras;
 
   XFile? _imagenSeleccionada;
@@ -70,10 +69,6 @@ class _DialogoEditarProductoState
       text: '${p['categoria'] ?? ''}',
     );
 
-    _stock = TextEditingController(
-      text: '${p['stock'] ?? 0}',
-    );
-
     _codigoBarras = TextEditingController(
       text: '${p['codigo_barras'] ?? ''}',
     );
@@ -85,7 +80,6 @@ class _DialogoEditarProductoState
     _descripcion.dispose();
     _precio.dispose();
     _categoria.dispose();
-    _stock.dispose();
     _codigoBarras.dispose();
     super.dispose();
   }
@@ -317,12 +311,11 @@ class _DialogoEditarProductoState
       'descripcion': _descripcion.text.trim(),
       'precio': _precio.text.replaceAll(',', '.').trim(),
       'categoria': _categoria.text.trim(),
-      'stock': _stock.text.trim(),
       'codigoBarras': _codigoBarras.text.trim().isEmpty
           ? null
           : _codigoBarras.text.trim(),
 
-      // URL anterior y archivo nuevo, si se seleccionó uno.
+      // Imagen anterior y archivo nuevo, si se seleccionó uno.
       'imagen': _imagenActual,
       'imagenArchivo': _imagenSeleccionada,
     });
@@ -429,7 +422,6 @@ class _DialogoEditarProductoState
                     maxLines: 3,
                   ),
 
-                  // Código de barras: escritura manual o escáner.
                   Padding(
                     padding: const EdgeInsets.only(bottom: 14),
                     child: BarcodeScannerField(
@@ -439,26 +431,11 @@ class _DialogoEditarProductoState
                     ),
                   ),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _campo(
-                          _precio,
-                          'Precio',
-                          icono: Icons.attach_money_rounded,
-                          tipo: 'precio',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _campo(
-                          _stock,
-                          'Stock',
-                          icono: Icons.warehouse_outlined,
-                          tipo: 'stock',
-                        ),
-                      ),
-                    ],
+                  _campo(
+                    _precio,
+                    'Precio',
+                    icono: Icons.attach_money_rounded,
+                    tipo: 'precio',
                   ),
 
                   _campo(
@@ -547,9 +524,7 @@ class _DialogoEditarProductoState
         cursorColor: AppColors.accent,
         keyboardType: tipo == 'precio'
             ? const TextInputType.numberWithOptions(decimal: true)
-            : tipo == 'stock'
-                ? TextInputType.number
-                : TextInputType.text,
+            : TextInputType.text,
         decoration: InputDecoration(
           labelText: etiqueta,
           labelStyle: const TextStyle(color: Colors.white60),
@@ -605,14 +580,6 @@ class _DialogoEditarProductoState
 
             if (numero == null || numero <= 0) {
               return 'Precio inválido';
-            }
-          }
-
-          if (tipo == 'stock') {
-            final numero = int.tryParse(value.trim());
-
-            if (numero == null || numero < 0) {
-              return 'Stock inválido';
             }
           }
 

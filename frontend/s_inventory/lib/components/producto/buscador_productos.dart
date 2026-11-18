@@ -4,6 +4,7 @@ import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/components/producto/formulario.dart';
 import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/core/scanner/barcode_scanner_page.dart';
+import 'package:s_inventory/pages/detalle_producto_page.dart';
 
 class BuscadorProductos extends StatefulWidget {
   final ValueChanged<Map<String, dynamic>>? onProductoTap;
@@ -34,7 +35,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
   }
 
   Future<void> _cargarProductos() async {
-    setState(() => cargando = true);
+    if (mounted) setState(() => cargando = true);
 
     try {
       final datos = await _service.obtenerProductos();
@@ -50,6 +51,26 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
       if (mounted) {
         setState(() => cargando = false);
       }
+    }
+  }
+
+  Future<void> _abrirDetalle(Map<String, dynamic> producto) async {
+    if (widget.onProductoTap != null) {
+      widget.onProductoTap!(producto);
+      return;
+    }
+
+    final resultado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DetalleProductoPage(
+          producto: producto,
+        ),
+      ),
+    );
+
+    if (resultado == true && mounted) {
+      await _cargarProductos();
     }
   }
 
@@ -296,7 +317,10 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
                 Expanded(
                   child: Text(
                     'Categoría: $categoriaSeleccionada',
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -355,9 +379,7 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
-                          onTap: widget.onProductoTap == null
-                              ? null
-                              : () => widget.onProductoTap!(p),
+                          onTap: () => _abrirDetalle(p),
                           leading: _imagenProducto(imagen),
                           title: Text(
                             p['nombre']?.toString() ?? 'Sin nombre',
@@ -375,6 +397,10 @@ class _BuscadorProductosState extends State<BuscadorProductos> {
                               color: Colors.white70,
                               height: 1.4,
                             ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white54,
                           ),
                         ),
                       );

@@ -13,7 +13,8 @@ class RegistrarProductoPage extends StatefulWidget {
       _RegistrarProductoPageState();
 }
 
-class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
+class _RegistrarProductoPageState
+    extends State<RegistrarProductoPage> {
   final ProductoService _service = ProductoService();
 
   bool _abriendoFormulario = false;
@@ -29,9 +30,13 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
   }
 
   Future<void> _abrirFormulario() async {
-    if (_abriendoFormulario || _guardando || !mounted) return;
+    if (_abriendoFormulario || _guardando || !mounted) {
+      return;
+    }
 
-    setState(() => _abriendoFormulario = true);
+    setState(() {
+      _abriendoFormulario = true;
+    });
 
     try {
       final datos = await FormularioProducto.mostrar(context);
@@ -43,13 +48,22 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
         return;
       }
 
-      setState(() => _guardando = true);
+      setState(() {
+        _guardando = true;
+      });
 
       final XFile? imagen = datos['imagen'] as XFile?;
-      final String? imagenUrl = datos['imagenUrl'] as String?;
+
+      final String? imagenUrl =
+          datos['imagenUrl'] as String?;
+
       final String? codigoBarras =
           datos['codigoBarras'] as String?;
-debugPrint('CÓDIGO RECIBIDO DEL FORMULARIO: $codigoBarras');
+
+      // FECHA OPCIONAL DEL LOTE INICIAL
+      final String? fechaVencimiento =
+          datos['fechaVencimiento'] as String?;
+
       List<int>? bytes;
 
       if (imagen != null) {
@@ -66,13 +80,18 @@ debugPrint('CÓDIGO RECIBIDO DEL FORMULARIO: $codigoBarras');
         nombreImagen: imagen?.name,
         imagenUrl: imagenUrl,
         codigoBarras: codigoBarras,
+
+        // ENVIAR FECHA AL SERVICIO
+        fechaVencimiento: fechaVencimiento,
       );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Producto registrado correctamente.'),
+          content: Text(
+            'Producto registrado correctamente.',
+          ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
