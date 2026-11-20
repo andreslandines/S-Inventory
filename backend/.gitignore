@@ -1,3 +1,6 @@
 .env
 node_modules/
 private/
+Add-Content android\.gitignore "key.properties"
+Add-Content android\.gitignore "**/*.jks"
+Add-Content .gitignore "env.json"
