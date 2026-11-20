@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:s_inventory/core/colores.dart';
+
 
 class SeccionTitulo extends StatelessWidget {
   final String titulo;

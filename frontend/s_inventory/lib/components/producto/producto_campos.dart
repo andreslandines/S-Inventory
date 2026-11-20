@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:s_inventory/core/colores.dart';
+
 import 'producto_widgets.dart';
 
 class ProductoCampoTexto extends StatelessWidget {

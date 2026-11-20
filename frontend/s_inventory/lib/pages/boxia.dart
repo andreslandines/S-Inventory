@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:s_inventory/components/chat/ChatModal.dart';
-import 'package:s_inventory/core/colores.dart';
+
 
 class Boxia extends StatefulWidget {
   const Boxia({super.key});
