@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:s_inventory/core/colores.dart';
 import 'package:s_inventory/core/estilostexto.dart';
 import 'package:s_inventory/components/inicio/ajustesopciones.dart';
@@ -29,8 +29,7 @@ class _AjustesState extends State<Ajustes> {
     if (!mounted) return;
 
     setState(() {
-      _correo = prefs.getString('user_correo') ??
-          'Correo no disponible';
+      _correo = prefs.getString('user_correo') ?? 'Correo no disponible';
     });
   }
 
@@ -43,9 +42,7 @@ class _AjustesState extends State<Ajustes> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
       (route) => false,
     );
   }
@@ -54,9 +51,32 @@ class _AjustesState extends State<Ajustes> {
   void _abrirManual() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ManualUsuarioScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const ManualUsuarioScreen()),
+    );
+  }
+
+  // Abrir la política de privacidad en el navegador.
+  Future<void> _abrirPoliticaPrivacidad() async {
+    const url = 'https://sofiatovar2965-lang.github.io/s_inventory_privacidad/';
+
+    try {
+      final uri = Uri.parse(url);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _mostrarMensaje('No se pudo abrir la política de privacidad.');
+      }
+    } catch (e) {
+      _mostrarMensaje('No se pudo abrir la política de privacidad: $e');
+    }
+  }
+
+  void _mostrarMensaje(String mensaje) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -72,11 +92,7 @@ class _AjustesState extends State<Ajustes> {
           ),
           title: const Column(
             children: [
-              Icon(
-                Icons.code_rounded,
-                color: Color(0xFFFFC400),
-                size: 38,
-              ),
+              Icon(Icons.code_rounded, color: Color(0xFFFFC400), size: 38),
               SizedBox(height: 10),
               Text(
                 'Desarrolladores',
@@ -114,18 +130,12 @@ class _AjustesState extends State<Ajustes> {
               Text(
                 'Sistema de Gestión de Inventario',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white60,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.white60, fontSize: 12),
               ),
               SizedBox(height: 5),
               Text(
                 'SENA · 2026',
-                style: TextStyle(
-                  color: Colors.white38,
-                  fontSize: 11,
-                ),
+                style: TextStyle(color: Colors.white38, fontSize: 11),
               ),
             ],
           ),
@@ -161,10 +171,7 @@ class _AjustesState extends State<Ajustes> {
         border: Border.all(color: Colors.white12),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 4,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         leading: Container(
           width: 42,
           height: 42,
@@ -172,10 +179,7 @@ class _AjustesState extends State<Ajustes> {
             color: const Color(0xFFFFC400).withOpacity(0.12),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icono,
-            color: const Color(0xFFFFC400),
-          ),
+          child: Icon(icono, color: const Color(0xFFFFC400)),
         ),
         title: Text(
           titulo,
@@ -187,10 +191,7 @@ class _AjustesState extends State<Ajustes> {
         ),
         subtitle: Text(
           descripcion,
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 11,
-          ),
+          style: const TextStyle(color: Colors.white54, fontSize: 11),
         ),
         trailing: const Icon(
           Icons.arrow_forward_ios_rounded,
@@ -207,14 +208,9 @@ class _AjustesState extends State<Ajustes> {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Container(
-        margin: const EdgeInsets.only(
-          left: 20,
-          right: 20,
-          bottom: 20,
-        ),
+        margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 164, 161, 161)
-              .withOpacity(0.06),
+          color: const Color.fromARGB(255, 164, 161, 161).withOpacity(0.06),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: Colors.white12, width: 1),
           boxShadow: [
@@ -240,10 +236,7 @@ class _AjustesState extends State<Ajustes> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
-                      border: Border.all(
-                        color: Colors.white24,
-                        width: 1,
-                      ),
+                      border: Border.all(color: Colors.white24, width: 1),
                     ),
                     child: const Icon(
                       Icons.person,
@@ -257,10 +250,7 @@ class _AjustesState extends State<Ajustes> {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 15,
-                    ),
+                    style: const TextStyle(color: Colors.white54, fontSize: 15),
                   ),
                 ],
               ),
@@ -268,37 +258,22 @@ class _AjustesState extends State<Ajustes> {
 
             const SizedBox(height: 30),
 
-            const Text(
-              'CUENTA',
-              style: Estilotextos.textoNormal,
-            ),
+            const Text('CUENTA', style: Estilotextos.textoNormal),
             const SizedBox(height: 8),
 
             const OpcionMenu1(),
             const OpcionMenu2(),
 
-            const SizedBox(height: 12),
-
-            const Text(
-              'PREFERENCIAS',
-              style: Estilotextos.textoNormal,
-            ),
-            const SizedBox(height: 8),
-
-            const OpcionConToggle1(),
-
             const SizedBox(height: 20),
 
-            const Text(
-              'INFORMACIÓN',
-              style: Estilotextos.textoNormal,
-            ),
+            const Text('INFORMACIÓN', style: Estilotextos.textoNormal),
             const SizedBox(height: 10),
 
             _opcionInformacion(
               icono: Icons.menu_book_rounded,
               titulo: 'Manual de ayuda',
-              descripcion: 'Consulta la guía de S-Inventory para ayudar al usuario',
+              descripcion:
+                  'Consulta la guía de S-Inventory para ayudar al usuario',
               onTap: _abrirManual,
             ),
 
@@ -307,6 +282,13 @@ class _AjustesState extends State<Ajustes> {
               titulo: 'Desarrolladores',
               descripcion: 'Conoce al equipo de desarrollo',
               onTap: _mostrarDesarrolladores,
+            ),
+
+            _opcionInformacion(
+              icono: Icons.privacy_tip_outlined,
+              titulo: 'Política de privacidad',
+              descripcion: 'Consulta cómo manejamos tus datos',
+              onTap: _abrirPoliticaPrivacidad,
             ),
 
             const SizedBox(height: 18),
@@ -318,9 +300,12 @@ class _AjustesState extends State<Ajustes> {
                 onPressed: _cerrarSesion,
                 style: ElevatedButton.styleFrom(
                   elevation: 4,
-                  backgroundColor:
-                      const Color.fromARGB(255, 245, 0, 0)
-                          .withOpacity(0.46),
+                  backgroundColor: const Color.fromARGB(
+                    255,
+                    245,
+                    0,
+                    0,
+                  ).withOpacity(0.46),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -344,10 +329,7 @@ class _DesarrolladorItem extends StatelessWidget {
   final String nombre;
   final String numero;
 
-  const _DesarrolladorItem({
-    required this.nombre,
-    required this.numero,
-  });
+  const _DesarrolladorItem({required this.nombre, required this.numero});
 
   @override
   Widget build(BuildContext context) {

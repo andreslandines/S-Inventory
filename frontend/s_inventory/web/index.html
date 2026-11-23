@@ -20,24 +20,5 @@
 <body>
   <!-- Iniciar la aplicación Flutter -->
   <script src="flutter_bootstrap.js" async></script>
-
-  <!-- Registrar el Service Worker de Firebase -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', async () => {
-        try {
-          await navigator.serviceWorker.register(
-            '/firebase-messaging-sw.js'
-          );
-          console.log('Service Worker de Firebase registrado');
-        } catch (error) {
-          console.error(
-            'Error al registrar el Service Worker:',
-            error
-          );
-        }
-      });
-    }
-  </script>
 </body>
 </html>

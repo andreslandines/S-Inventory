@@ -207,7 +207,6 @@ const patronesPermitidos = [
     /\bpor vencer\b/,
 
     // Funcionalidades del sistema.
-    /\bnotificacion(es)?\b/,
     /\breporte(s)?\b/,
     /\binforme(s)?\b/,
     /\bs-inventory\b/,
@@ -923,9 +922,6 @@ CUENTA Y ACCESO:
 Inicio de sesión con correo y contraseña o con Google. Recuperación de contraseña con un código enviado
 al correo. Roles: el rol administrador puede crear, editar y eliminar productos y gestionar entradas de
 lotes; el resto de usuarios no puede hacer esas operaciones.
-
-NOTIFICACIONES:
-Las notificaciones push funcionan solo en Android.
 
 ELIMINAR PRODUCTO:
 Es una eliminación lógica: el producto se marca como inactivo y deja de mostrarse en el inventario.

@@ -334,7 +334,7 @@ export const enviarCorreoVenta = async (
       result,
     };
   } catch (error) {
-    registrarError('notificación de venta', error);
+    registrarError('correo de venta', error);
 
     return {
       exito: false,

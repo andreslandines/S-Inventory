@@ -32,22 +32,48 @@ export const obtenerDetallesVenta = async (id_venta) => {
     return { data, error };
 };
 
-// Registrar venta mediante la función SQL FEFO
-export const registrarVentaFefo = async (id_usuario, productos) => {
-    const { data, error } = await supabase.rpc(
-        "registrar_venta_fefo",
-        {
-            p_id_usuario: id_usuario,
-            p_productos: productos
-        }
-    );
+// Obtener los lotes disponibles de un producto (FEFO: vencen primero).
+export const obtenerLotesDisponibles = async (id_producto) => {
+    const { data, error } = await supabase
+        .from("vencimientos")
+        .select(
+            "id_vencimiento, cantidad_disponible, fecha_vencimiento"
+        )
+        .eq("id_producto", id_producto)
+        .gt("cantidad_disponible", 0)
+        .order("fecha_vencimiento", { ascending: true });
 
     return { data, error };
 };
 
-// Funciones anteriores conservadas por compatibilidad.
-// No utilizarlas para registrar ventas nuevas: el proceso
-// debe realizarse mediante registrarVentaFefo.
+// Descontar la cantidad disponible de un lote.
+export const actualizarCantidadLote = async (
+    id_vencimiento,
+    cantidad_disponible
+) => {
+    const { data, error } = await supabase
+        .from("vencimientos")
+        .update({ cantidad_disponible })
+        .eq("id_vencimiento", id_vencimiento)
+        .select()
+        .single();
+
+    return { data, error };
+};
+
+// Trazabilidad: detalle_venta_lotes usa id_detalle (no id_venta).
+export const crearDetalleVentaLote = async (detalle) => {
+    const { data, error } = await supabase
+        .from("detalle_venta_lotes")
+        .insert(detalle)
+        .select()
+        .single();
+
+    return { data, error };
+};
+
+// Funciones auxiliares usadas por el controlador de ventas:
+// escriben ventas, detalles, stock y movimientos con las columnas reales.
 
 export const crearVenta = async (ventaData) => {
     const { data, error } = await supabase

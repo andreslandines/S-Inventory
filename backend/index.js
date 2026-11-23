@@ -7,7 +7,6 @@ import UsuariosRoutes from "./routes/usuarios.js";
 import productosRoutes from "./routes/productos.js";
 import ventasRoutes from "./routes/ventas.js";
 import vencimientosRoutes from "./routes/vencimientos.js";
-import notificacionesRoutes from "./routes/notificaciones.js";
 import chatbotRoutes from "./routes/chatbot.js";
 import reportesRoutes from "./routes/reportes.js";
 import cors from 'cors';
@@ -41,7 +40,6 @@ app.use('/usuarios', UsuariosRoutes);
 app.use('/pro', productosRoutes);
 app.use('/ventas', ventasRoutes);
 app.use('/vencimientos', vencimientosRoutes);
-app.use('/notificaciones', notificacionesRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use("/reportes", reportesRoutes);
 

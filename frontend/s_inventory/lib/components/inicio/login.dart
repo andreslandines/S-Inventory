@@ -6,7 +6,6 @@ import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/user_service.dart';
-import '../../services/notificacion_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -91,27 +90,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final contrasena = _contrasenaController.text.trim();
 
     if (email.isEmpty || contrasena.isEmpty) {
-      _mostrarMensaje(
-        'Ingresa tu correo y contraseña',
-        esError: true,
-      );
+      _mostrarMensaje('Ingresa tu correo y contraseña', esError: true);
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final respuesta = await _userService.loginUsuario(
-        email,
-        contrasena,
-      );
+      final respuesta = await _userService.loginUsuario(email, contrasena);
 
       final usuario = respuesta['usuario'];
 
       if (usuario is! Map) {
-        throw Exception(
-          'El servidor no devolvió los datos del usuario.',
-        );
+        throw Exception('El servidor no devolvió los datos del usuario.');
       }
 
       final idUsuario = usuario['id_usuario'];
@@ -133,14 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
 
       await prefs.setString('jwt_token', token);
-      await prefs.setString(
-        'id_usuario',
-        idNumerico.toString(),
-      );
-      await prefs.setString(
-        'user_name',
-        usuario['nombre']?.toString() ?? '',
-      );
+      await prefs.setString('id_usuario', idNumerico.toString());
+      await prefs.setString('user_name', usuario['nombre']?.toString() ?? '');
       await prefs.setString(
         'user_email',
         usuario['email']?.toString() ?? email,
@@ -150,19 +135,12 @@ class _LoginScreenState extends State<LoginScreen> {
         usuario['rol']?.toString() ?? 'Usuario',
       );
       await prefs.setString('user_correo', email);
-      try {
-        await NotificacionService.inicializar();
-      } catch (e) {
-        debugPrint('No se pudo inicializar FCM: $e');
-      }
 
       if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } catch (e) {
       if (mounted) {
@@ -178,155 +156,136 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _mostrarMensaje(
-    String mensaje, {
-    bool esError = false,
-  }) {
+  void _mostrarMensaje(String mensaje, {bool esError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor:
-            esError ? Colors.red.shade700 : Colors.green.shade700,
+        backgroundColor: esError ? Colors.red.shade700 : Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: AppColors.fondo,
-    resizeToAvoidBottomInset: false,
-    body: SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: Container(
-                margin: const EdgeInsets.all(30),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.fondo,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ClipOval(
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.fondo,
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Container(
+                  margin: const EdgeInsets.all(30),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.fondo,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'S-Inventory',
-                      style: Estilotextos.Titulos,
-                    ),
-                    Text(
-                      'Gestion inteligente de inventario',
-                      style: Estilotextos.textoSecundario,
-                    ),
-                    const SizedBox(height: 30),
-
-                    _campo(
-                      'Correo Electrónico',
-                      _emailController,
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    _campo(
-                      'Contraseña',
-                      _contrasenaController,
-                      contrasena: true,
-                    ),
-
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const Recoverypassword(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          '¿Has olvidado tu contraseña?',
-                          style: Estilotextos
-                              .textoOlvidasteContrasena,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipOval(
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 10),
+                      Text('S-Inventory', style: Estilotextos.Titulos),
+                      Text(
+                        'Gestion inteligente de inventario',
+                        style: Estilotextos.textoSecundario,
+                      ),
+                      const SizedBox(height: 30),
 
-                    const SizedBox(height: 30),
+                      _campo('Correo Electrónico', _emailController),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.fondo,
-                          disabledBackgroundColor: Colors.white,
-                          disabledForegroundColor:
-                              AppColors.fondo,
-                          elevation: 4,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 15,
-                            horizontal: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed:
-                            _isLoading ? null : _iniciarSesion,
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 30,
-                                height: 30,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Iniciar sesión',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                      const SizedBox(height: 30),
+
+                      _campo(
+                        'Contraseña',
+                        _contrasenaController,
+                        contrasena: true,
+                      ),
+
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const Recoverypassword(),
                               ),
+                            );
+                          },
+                          child: const Text(
+                            '¿Has olvidado tu contraseña?',
+                            style: Estilotextos.textoOlvidasteContrasena,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 30),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.fondo,
+                            disabledBackgroundColor: Colors.white,
+                            disabledForegroundColor: AppColors.fondo,
+                            elevation: 4,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 15,
+                              horizontal: 15,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: _isLoading ? null : _iniciarSesion,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Iniciar sesión',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
