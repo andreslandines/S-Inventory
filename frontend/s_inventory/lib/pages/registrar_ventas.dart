@@ -263,7 +263,11 @@ class _RegistrarVentaState extends State<RegistrarVenta> {
 
       Navigator.pop(context, true);
     } catch (e) {
-      _mensaje('No se pudo registrar la venta: $e');
+      final detalle = e
+          .toString()
+          .replaceFirst(RegExp(r'^Exception:\s*'), '');
+
+      _mensaje('No se pudo registrar la venta: $detalle');
     } finally {
       if (mounted) {
         setState(() => _guardando = false);

@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:s_inventory/pages/detalle_producto_page.dart';
+import 'package:s_inventory/services/producto_service.dart';
 import 'package:s_inventory/services/vencimiento_service.dart';
 
 class LotesPage extends StatefulWidget {
@@ -11,10 +12,13 @@ class LotesPage extends StatefulWidget {
 
 class _LotesPageState extends State<LotesPage> {
   final VencimientoService _service = VencimientoService();
+  final ProductoService _productoService = ProductoService();
+  final TextEditingController _busquedaController = TextEditingController();
 
   List<Map<String, dynamic>> _lotes = [];
   bool _cargando = true;
   String _filtro = 'Todos';
+  String _busqueda = '';
   String? _error;
 
   static const Color fondo = Color(0xFF111827);
@@ -25,6 +29,23 @@ class _LotesPageState extends State<LotesPage> {
   void initState() {
     super.initState();
     _cargarLotes();
+  }
+
+  @override
+  void dispose() {
+    _busquedaController.dispose();
+    super.dispose();
+  }
+
+  void _mensaje(String texto) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texto),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _cargarLotes() async {
@@ -51,6 +72,51 @@ class _LotesPageState extends State<LotesPage> {
         _error = e.toString();
         _cargando = false;
       });
+    }
+  }
+
+  // Abre el detalle del producto asociado al lote. La relación del lote no
+  // trae precio, descripción ni código, por eso se completa con elcatálogo.
+  Future<void> _abrirDetalleProducto(Map<String, dynamic> lote) async {
+    final relacion = _obtenerProducto(lote);
+    final id = relacion['id_productos']?.toString();
+
+    if (id == null || id.isEmpty) {
+      _mensaje(
+        'No se puede abrir el producto de este lote.',
+      );
+      return;
+    }
+
+    Map<String, dynamic> producto = relacion;
+
+    if (id.isNotEmpty) {
+      try {
+        final productos = await _productoService.obtenerProductos();
+
+        for (final candidato in productos) {
+          if (candidato['id_productos']?.toString() == id) {
+            producto = candidato;
+            break;
+          }
+        }
+      } catch (_) {
+        // Si falla la consulta se muestra la información disponible en el lote.
+      }
+    }
+
+    if (!mounted) return;
+
+    final huboCambios = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DetalleProductoPage(producto: producto),
+      ),
+    );
+
+    // Agregar stock desde el detalle crea un lote nuevo: hay que recargar.
+    if (huboCambios == true && mounted) {
+      await _cargarLotes();
     }
   }
 
@@ -85,11 +151,7 @@ class _LotesPageState extends State<LotesPage> {
   DateTime get _hoy {
     final ahora = DateTime.now();
 
-    return DateTime.utc(
-      ahora.year,
-      ahora.month,
-      ahora.day,
-    );
+    return DateTime.utc(ahora.year, ahora.month, ahora.day);
   }
 
   int? _diasRestantes(dynamic fecha) {
@@ -138,9 +200,7 @@ class _LotesPageState extends State<LotesPage> {
     if (productoAlternativo is List &&
         productoAlternativo.isNotEmpty &&
         productoAlternativo.first is Map) {
-      return Map<String, dynamic>.from(
-        productoAlternativo.first as Map,
-      );
+      return Map<String, dynamic>.from(productoAlternativo.first as Map);
     }
 
     return {};
@@ -172,10 +232,7 @@ class _LotesPageState extends State<LotesPage> {
         color: amarillo.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(
-        Icons.inventory_2_outlined,
-        color: amarillo,
-      ),
+      child: const Icon(Icons.inventory_2_outlined, color: amarillo),
     );
   }
 
@@ -185,9 +242,7 @@ class _LotesPageState extends State<LotesPage> {
     // Un lote sin cantidad registrada no debe tratarse como agotado.
     final cantidadTexto = lote['cantidad_disponible']?.toString();
 
-    final cantidad = cantidadTexto == null
-        ? null
-        : int.tryParse(cantidadTexto);
+    final cantidad = cantidadTexto == null ? null : int.tryParse(cantidadTexto);
 
     if (cantidad != null && cantidad <= 0) return 'Agotado';
     if (dias == null) return 'Sin fecha';
@@ -231,25 +286,36 @@ class _LotesPageState extends State<LotesPage> {
     }).toList();
   }
 
+  // Combina el chip de estado seleccionado con la búsqueda por texto.
+  List<Map<String, dynamic>> get _lotesVisibles {
+    final base = _lotesFiltrados;
+    final texto = _busqueda.trim().toLowerCase();
+
+    if (texto.isEmpty) return base;
+
+    return base.where((lote) {
+      final producto = _obtenerProducto(lote);
+
+      return [
+        producto['nombre']?.toString(),
+        producto['categoria']?.toString(),
+        lote['numero_lote']?.toString(),
+      ].any((valor) => valor != null && valor.toLowerCase().contains(texto));
+    }).toList();
+  }
+
   int _contarEstado(String estado) {
     return _lotes.where((lote) => _estadoLote(lote) == estado).length;
   }
 
-  Widget _resumen(
-    String titulo,
-    int cantidad,
-    Color color,
-    IconData icono,
-  ) {
+  Widget _resumen(String titulo, int cantidad, Color color, IconData icono) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: tarjeta,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.05),
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,10 +335,7 @@ class _LotesPageState extends State<LotesPage> {
               titulo,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.white60, fontSize: 11),
             ),
           ],
         ),
@@ -286,14 +349,11 @@ class _LotesPageState extends State<LotesPage> {
     final nombreProducto =
         producto['nombre']?.toString() ?? 'Producto no disponible';
 
-    final numeroLote =
-        lote['numero_lote']?.toString() ?? 'Sin número';
+    final numeroLote = lote['numero_lote']?.toString() ?? 'Sin número';
 
     final cantidadTexto = lote['cantidad_disponible']?.toString();
 
-    final cantidad = cantidadTexto == null
-        ? null
-        : int.tryParse(cantidadTexto);
+    final cantidad = cantidadTexto == null ? null : int.tryParse(cantidadTexto);
 
     final cantidadInicialTexto = lote['cantidad_inicial']?.toString();
 
@@ -318,132 +378,149 @@ class _LotesPageState extends State<LotesPage> {
     } else if (dias == 0) {
       textoVencimiento = 'Vence hoy';
     } else {
-      textoVencimiento =
-          'Vence en $dias ${dias == 1 ? 'día' : 'días'}';
+      textoVencimiento = 'Vence en $dias ${dias == 1 ? 'día' : 'días'}';
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 13),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tarjeta,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.06),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        onTap: () => _abrirDetalleProducto(lote),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 13),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: tarjeta,
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(color: Colors.white.withOpacity(0.06)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: _imagenProducto(producto),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      nombreProducto,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+              Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _imagenProducto(producto),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          nombreProducto,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Lote #$numeroLote',
+                          style: const TextStyle(
+                            color: Colors.white60,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorEstado.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      estado,
+                      style: TextStyle(
+                        color: colorEstado,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 10,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Lote #$numeroLote',
-                      style: const TextStyle(
-                        color: Colors.white60,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: colorEstado.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  estado,
+              const SizedBox(height: 17),
+              Row(
+                children: [
+                  Expanded(
+                    child: _dato(
+                      'Disponibles',
+                      cantidad == null ? 'Sin dato' : '$cantidad unidades',
+                      Icons.inventory_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _dato(
+                      'Cantidad inicial',
+                      cantidadInicial == null
+                          ? 'Sin dato'
+                          : '$cantidadInicial unidades',
+                      Icons.add_box_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Divider(color: Colors.white.withOpacity(0.08)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_month_outlined,
+                    color: amarillo,
+                    size: 19,
+                  ),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      _formatearFecha(fecha),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+              if (fecha != null) ...[
+                const SizedBox(height: 7),
+                Text(
+                  textoVencimiento,
                   style: TextStyle(
                     color: colorEstado,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 10,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 17),
-          Row(
-            children: [
-              Expanded(
-                child: _dato(
-                  'Disponibles',
-                  cantidad == null ? 'Sin dato' : '$cantidad unidades',
-                  Icons.inventory_outlined,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _dato(
-                  'Cantidad inicial',
-                  cantidadInicial == null
-                      ? 'Sin dato'
-                      : '$cantidadInicial unidades',
-                  Icons.add_box_outlined,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Divider(color: Colors.white.withOpacity(0.08)),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(
-                Icons.calendar_month_outlined,
-                color: amarillo,
-                size: 19,
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  _formatearFecha(fecha),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
+              ],
+              const SizedBox(height: 11),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Ver producto',
+                    style: TextStyle(
+                      color: amarillo,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                  SizedBox(width: 3),
+                  Icon(Icons.chevron_right, color: amarillo, size: 16),
+                ],
               ),
             ],
           ),
-          if (fecha != null) ...[
-            const SizedBox(height: 7),
-            Text(
-              textoVencimiento,
-              style: TextStyle(
-                color: colorEstado,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -459,10 +536,7 @@ class _LotesPageState extends State<LotesPage> {
             children: [
               Text(
                 titulo,
-                style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
               ),
               const SizedBox(height: 3),
               Text(
@@ -480,14 +554,49 @@ class _LotesPageState extends State<LotesPage> {
     );
   }
 
+  Widget _buscador() {
+    return TextField(
+      controller: _busquedaController,
+      onChanged: (valor) => setState(() => _busqueda = valor),
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Buscar por producto, lote o categoría...',
+        hintStyle: const TextStyle(color: Colors.white54),
+        prefixIcon: const Icon(Icons.search, color: amarillo),
+        suffixIcon: _busqueda.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Limpiar búsqueda',
+                onPressed: () {
+                  _busquedaController.clear();
+                  setState(() => _busqueda = '');
+                },
+                icon: const Icon(Icons.close, color: Colors.white70),
+              ),
+        filled: true,
+        fillColor: tarjeta,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: amarillo),
+        ),
+      ),
+    );
+  }
+
   Widget _filtros() {
-    final filtros = [
-      'Todos',
-      'Vencidos',
-      'Próximos',
-      'Vigentes',
-      'Agotados',
-    ];
+    final filtros = ['Todos', 'Vencidos', 'Próximos', 'Vigentes', 'Agotados'];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -523,7 +632,8 @@ class _LotesPageState extends State<LotesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final lotes = _lotesFiltrados;
+    final lotes = _lotesVisibles;
+    final hayBusqueda = _busqueda.trim().isNotEmpty;
 
     return Scaffold(
       backgroundColor: fondo,
@@ -544,124 +654,124 @@ class _LotesPageState extends State<LotesPage> {
         ],
       ),
       body: _cargando
-          ? const Center(
-              child: CircularProgressIndicator(color: amarillo),
-            )
+          ? const Center(child: CircularProgressIndicator(color: amarillo))
           : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.redAccent,
-                          size: 42,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'No se pudieron cargar los lotes.',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _error!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        ElevatedButton.icon(
-                          onPressed: _cargarLotes,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Intentar nuevamente'),
-                        ),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.redAccent,
+                      size: 42,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'No se pudieron cargar los lotes.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    ElevatedButton.icon(
+                      onPressed: _cargarLotes,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Intentar nuevamente'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _cargarLotes,
+              color: amarillo,
+              backgroundColor: tarjeta,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(18),
+                children: [
+                  Row(
+                    children: [
+                      _resumen(
+                        'Total de lotes',
+                        _lotes.length,
+                        amarillo,
+                        Icons.inventory_2_outlined,
+                      ),
+                      const SizedBox(width: 9),
+                      _resumen(
+                        'Próximos',
+                        _contarEstado('Próximo a vencer'),
+                        Colors.orangeAccent,
+                        Icons.warning_amber_rounded,
+                      ),
+                      const SizedBox(width: 9),
+                      _resumen(
+                        'Vencidos',
+                        _contarEstado('Vencido'),
+                        Colors.redAccent,
+                        Icons.event_busy_outlined,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 23),
+                  const Text(
+                    'Filtrar lotes',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
                     ),
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _cargarLotes,
-                  color: amarillo,
-                  backgroundColor: tarjeta,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(18),
-                    children: [
-                      Row(
+                  const SizedBox(height: 11),
+                  _buscador(),
+                  const SizedBox(height: 15),
+                  _filtros(),
+                  const SizedBox(height: 18),
+                  Text(
+                    '${lotes.length} ${lotes.length == 1 ? 'lote encontrado' : 'lotes encontrados'}',
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  if (lotes.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(25),
+                      decoration: BoxDecoration(
+                        color: tarjeta,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
                         children: [
-                          _resumen(
-                            'Total de lotes',
-                            _lotes.length,
-                            amarillo,
-                            Icons.inventory_2_outlined,
+                          const Icon(
+                            Icons.inventory_outlined,
+                            color: Colors.white38,
+                            size: 40,
                           ),
-                          const SizedBox(width: 9),
-                          _resumen(
-                            'Próximos',
-                            _contarEstado('Próximo a vencer'),
-                            Colors.orangeAccent,
-                            Icons.warning_amber_rounded,
-                          ),
-                          const SizedBox(width: 9),
-                          _resumen(
-                            'Vencidos',
-                            _contarEstado('Vencido'),
-                            Colors.redAccent,
-                            Icons.event_busy_outlined,
+                          const SizedBox(height: 12),
+                          Text(
+                            hayBusqueda
+                                ? 'No hay lotes que coincidan con la búsqueda.'
+                                : 'No hay lotes para mostrar.',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.white70),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 23),
-                      const Text(
-                        'Filtrar lotes',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                      const SizedBox(height: 11),
-                      _filtros(),
-                      const SizedBox(height: 18),
-                      Text(
-                        '${lotes.length} ${lotes.length == 1 ? 'lote encontrado' : 'lotes encontrados'}',
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (lotes.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(25),
-                          decoration: BoxDecoration(
-                            color: tarjeta,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(
-                                Icons.inventory_outlined,
-                                color: Colors.white38,
-                                size: 40,
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'No hay lotes para mostrar.',
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        ...lotes.map(_tarjetaLote),
-                    ],
-                  ),
-                ),
+                    )
+                  else
+                    ...lotes.map(_tarjetaLote),
+                ],
+              ),
+            ),
     );
   }
 }

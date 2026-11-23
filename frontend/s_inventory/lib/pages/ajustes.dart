@@ -276,7 +276,6 @@ class _AjustesState extends State<Ajustes> {
 
             const OpcionMenu1(),
             const OpcionMenu2(),
-            const OpcionMenu3(),
 
             const SizedBox(height: 12),
 

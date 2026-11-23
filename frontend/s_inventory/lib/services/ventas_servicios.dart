@@ -85,10 +85,14 @@ class VentaService {
     Map<String, dynamic> datos = {};
 
     if (respuesta.body.isNotEmpty) {
-      final json = jsonDecode(respuesta.body);
+      try {
+        final json = jsonDecode(respuesta.body);
 
-      if (json is Map<String, dynamic>) {
-        datos = json;
+        if (json is Map<String, dynamic>) {
+          datos = json;
+        }
+      } catch (_) {
+        // El servidor puede responder HTML cuando está suspendido (Render).
       }
     }
 
@@ -96,10 +100,22 @@ class VentaService {
       return datos;
     }
 
+    // El backend envía el motivo exacto en "detalle" (stock insuficiente,
+    // producto inexistente, error de la base de datos, etc.).
+    final detalle = datos['detalle']?.toString().trim() ?? '';
+    final mensaje = datos['error']?.toString().trim() ?? '';
+
+    if (detalle.isNotEmpty) {
+      throw Exception(detalle);
+    }
+
+    if (mensaje.isNotEmpty) {
+      throw Exception(mensaje);
+    }
+
     throw Exception(
-      datos['error']?.toString() ??
-          'No se pudo registrar la venta. '
-          'Código HTTP: ${respuesta.statusCode}',
+      'No se pudo registrar la venta. '
+      'Código HTTP: ${respuesta.statusCode}',
     );
   }
 

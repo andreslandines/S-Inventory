@@ -9,20 +9,26 @@ import 'package:s_inventory/pages/registrar_ventas.dart';
 class Home1 extends StatelessWidget {
   final VoidCallback onAgregarProducto;
   final VoidCallback onReportes;
+  final VoidCallback? onVentaRegistrada;
 
   const Home1({
     super.key,
     required this.onAgregarProducto,
     required this.onReportes,
+    this.onVentaRegistrada,
   });
 
   Future<void> _abrirVenta(BuildContext context) async {
-    await Navigator.push(
+    final registrada = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => const RegistrarVenta(),
       ),
     );
+
+    if (registrada == true) {
+      onVentaRegistrada?.call();
+    }
   }
 
   @override

@@ -6,13 +6,11 @@ class AppBarHome extends StatelessWidget
     implements PreferredSizeWidget {
   final String nombre;
   final VoidCallback onPerfil;
-  final VoidCallback onNotificaciones;
 
   const AppBarHome({
     super.key,
     required this.nombre,
     required this.onPerfil,
-    required this.onNotificaciones,
   });
 
   @override
@@ -49,14 +47,6 @@ class AppBarHome extends StatelessWidget
         ],
       ),
       actions: [
-        IconButton(
-          tooltip: 'Notificaciones',
-          icon: const Icon(
-            Icons.notifications_none_rounded,
-            color: Colors.white,
-          ),
-          onPressed: onNotificaciones,
-        ),
         IconButton(
           tooltip: 'Perfil',
           icon: const Icon(

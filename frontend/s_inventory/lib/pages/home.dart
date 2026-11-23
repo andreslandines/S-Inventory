@@ -13,7 +13,6 @@ import 'package:s_inventory/pages/inventario.dart';
 import 'package:s_inventory/pages/boxia.dart';
 import 'package:s_inventory/pages/reportes.dart';
 import 'package:s_inventory/pages/ajustes.dart';
-import 'package:s_inventory/pages/notificaciones.dart';
 import 'package:s_inventory/pages/registrar_producto.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,6 +28,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   String _nombre = 'Administrador';
   String _correo = '';
+
+  // Cambia al registrar una venta para recargar inventario y reportes.
+  int _versionDatos = 0;
 
   @override
   void initState() {
@@ -70,11 +72,15 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  Future<void> _abrirNotificaciones() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const NotificacionesPage(),
+  void _onVentaRegistrada() {
+    if (!mounted) return;
+
+    setState(() => _versionDatos++);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Venta registrada correctamente.'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -116,18 +122,19 @@ void _mostrarPerfil() {
       appBar: AppBarHome(
         nombre: _nombre,
         onPerfil: _mostrarPerfil,
-        onNotificaciones: _abrirNotificaciones,
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
           Home1(
+            key: ValueKey('home-$_versionDatos'),
             onAgregarProducto: _abrirRegistroProducto,
             onReportes: () => _tabController.animateTo(3),
+            onVentaRegistrada: _onVentaRegistrada,
           ),
-          const Inventario(),
+          Inventario(key: ValueKey('inventario-$_versionDatos')),
           const Boxia(),
-          const Reportes(),
+          Reportes(key: ValueKey('reportes-$_versionDatos')),
           const Ajustes(),
         ],
       ),

@@ -2,7 +2,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:s_inventory/core/colores.dart';
-import 'package:s_inventory/pages/notificaciones.dart';
 import 'package:s_inventory/pages/perfil.dart';
 import 'package:s_inventory/pages/recoverycodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,43 +73,6 @@ class OpcionMenu2 extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) =>
                   const Recoverypassword(desdeAjustes: true),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class OpcionMenu3 extends StatelessWidget {
-  const OpcionMenu3({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: const Icon(
-          Icons.notifications_active,
-          color: Colors.white,
-          size: 20,
-        ),
-        title: const Text(
-          'Notificaciones',
-          style: TextStyle(color: Colors.white, fontSize: 15),
-        ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: Colors.white54,
-          size: 23,
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  const NotificacionesPage(),
             ),
           );
         },
