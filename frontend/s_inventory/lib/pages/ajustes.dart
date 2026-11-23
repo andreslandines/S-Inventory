@@ -62,13 +62,17 @@ class _AjustesState extends State<Ajustes> {
     try {
       final uri = Uri.parse(url);
 
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        _mostrarMensaje('No se pudo abrir la política de privacidad.');
+      // No usamos canLaunchUrl: en algunos Android devuelve false para
+      // https aunque el navegador esté disponible.
+      final abierto = await launchUrl(uri, mode: LaunchMode.platformDefault);
+
+      if (!abierto && mounted) {
+        _mostrarMensaje('Copia este enlace para ver la política: $url');
       }
     } catch (e) {
-      _mostrarMensaje('No se pudo abrir la política de privacidad: $e');
+      if (mounted) {
+        _mostrarMensaje('Copia este enlace para ver la política: $url');
+      }
     }
   }
 
